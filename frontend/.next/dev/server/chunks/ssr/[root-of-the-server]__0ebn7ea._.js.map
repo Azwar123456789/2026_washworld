@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 10, "column": 0}, "map": {"version":3,"sources":["file:///app/app/page.tsx"],"sourcesContent":["import Link from \"next/link\";\n\nexport default function Home() {\n  return (\n    <main className=\"page\">\n      <h1>Wash World App</h1>\n\n      <p>\n        Se dine vaske, find nærmeste vaskehal og følg hvor meget du sparer med dit abonnement.\n      </p>\n\n      <div className=\"buttons\">\n        <Link href=\"/sign-up\">Opret bruger</Link>\n        <Link href=\"/login\">Login</Link>\n        <Link href=\"/locations\">Find vaskehal</Link>\n      </div>\n    </main>\n  );\n}"],"names":["Home","className","href"],"mappings":";;;;;AAAA;;;AAEe,SAASA;IACtB,qBACE,8OAAC;QAAKC,WAAU;;0BACd,8OAAC;0BAAG;;;;;;0BAEJ,8OAAC;0BAAE;;;;;;0BAIH,8OAAC;gBAAIA,WAAU;;kCACb,8OAAC,0LAAI;wBAACC,MAAK;kCAAW;;;;;;kCACtB,8OAAC,0LAAI;wBAACA,MAAK;kCAAS;;;;;;kCACpB,8OAAC,0LAAI;wBAACA,MAAK;kCAAa;;;;;;;;;;;;;;;;;;AAIhC"}}]
+}

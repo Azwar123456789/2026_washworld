@@ -1,0 +1,60 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: washworld_flask
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./backend:/app
+    environment:
+      DB_HOST: mariadb
+      DB_USER: root
+      DB_PASSWORD: password
+      DB_NAME: 2026_1_washworld
+    depends_on:
+      - mariadb
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: washworld_frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:5001
+      CHOKIDAR_USEPOLLING: "true"
+      WATCHPACK_POLLING: "true"
+    depends_on:
+      - backend
+
+  mariadb:
+    image: mariadb:10.6.20
+    container_name: 2026_1_washworld_mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: 2026_1_washworld
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "3306:3306"
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: 2026_1_washworld_phpmyadmin
+    depends_on:
+      - mariadb
+    environment:
+      PMA_HOST: mariadb
+      MYSQL_ROOT_PASSWORD: password
+    ports:
+      - "8080:80"
+
+volumes:
+  mariadb_data:
