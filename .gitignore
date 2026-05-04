@@ -89,3 +89,12 @@ instance/
 .npm
 .temp
 .cache
+
+# Next.js build filer
+frontend/.next/
+frontend/.nex/
+frontend/out/
+frontend/build/
+
+# Next.js cache
+frontend/.next/cache/
