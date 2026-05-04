@@ -2,6 +2,7 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 import uuid
 import time
+from datetime import datetime
 
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -45,7 +46,7 @@ def sign_up():
         user_pk = uuid.uuid4().hex
         verification_key = uuid.uuid4().hex
         reset_password_key = uuid.uuid4().hex + uuid.uuid4().hex
-        user_created_at = int(time.time())
+        
 
         password_hash = generate_password_hash(user_password)
 
@@ -63,7 +64,7 @@ def sign_up():
                 user_reset_password_key,
                 user_created_at
             )
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, NOW())
         """
 
         cursor.execute(q, (
@@ -72,10 +73,9 @@ def sign_up():
             user_email,
             password_hash,
             user_license_plate,
-            0,
+            None,
             verification_key,
             reset_password_key,
-            user_created_at
         ))
 
         subscription_pk = uuid.uuid4().hex
@@ -89,7 +89,7 @@ def sign_up():
                 subscription_started_at,
                 subscription_active
             )
-            VALUES (%s, %s, %s, %s, %s, %s)
+            VALUES (%s, %s, %s, %s, NOW(), %s)
         """
 
         cursor.execute(q_subscription, (
@@ -97,7 +97,6 @@ def sign_up():
             user_pk,
             "Premium Wash",
             179.00,
-            user_created_at,
             1
         ))
 

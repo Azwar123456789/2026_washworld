@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery } from "@tanstack/react-query";
 
-const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
 
 type SignUpData = {
   user_first_name: string;
@@ -16,6 +16,16 @@ type LoginData = {
   user_password: string;
 };
 
+async function readJson(response: Response) {
+  const text = await response.text();
+
+  try {
+    return text ? JSON.parse(text) : {};
+  } catch {
+    return { error: text || "Server returned invalid JSON" };
+  }
+}
+
 export function useAuth() {
   const signUpMutation = useMutation({
     mutationFn: async (data: SignUpData) => {
@@ -27,10 +37,10 @@ export function useAuth() {
         body: JSON.stringify(data),
       });
 
-      const result = await response.json();
+      const result = await readJson(response);
 
       if (!response.ok) {
-        throw new Error(result.error || "Signup failed");
+        throw new Error(result.error || result.message || "Signup failed");
       }
 
       return result;
@@ -47,13 +57,15 @@ export function useAuth() {
         body: JSON.stringify(data),
       });
 
-      const result = await response.json();
+      const result = await readJson(response);
 
       if (!response.ok) {
-        throw new Error(result.error || "Login failed");
+        throw new Error(result.error || result.message || "Login failed");
       }
 
-      localStorage.setItem("token", result.access_token);
+      if (result.access_token) {
+        localStorage.setItem("token", result.access_token);
+      }
 
       return result;
     },
@@ -70,10 +82,10 @@ export function useAuth() {
         },
       });
 
-      const result = await response.json();
+      const result = await readJson(response);
 
       if (!response.ok) {
-        throw new Error(result.error || "Not logged in");
+        throw new Error(result.error || result.message || "Not logged in");
       }
 
       return result.user;
@@ -87,6 +99,10 @@ export function useAuth() {
     user: meQuery.data,
     isSigningUp: signUpMutation.isPending,
     isLoggingIn: loginMutation.isPending,
-    error: signUpMutation.error?.message || loginMutation.error?.message || meQuery.error?.message || "",
+    error:
+      signUpMutation.error?.message ||
+      loginMutation.error?.message ||
+      meQuery.error?.message ||
+      "",
   };
 }
