@@ -3,6 +3,7 @@ body {
   font-family: Arial, sans-serif;
   background: #f4f7fb;
   color: #111827;
+  padding-bottom: 95px;
 }
 
 /* NAVBAR */
@@ -178,10 +179,6 @@ body {
 
 /* ===== DASHBOARD / LOGGED-IN HOME ===== */
 
-body {
-  padding-bottom: 95px;
-}
-
 .dashboard-page {
   min-height: 100vh;
   background: #efefef;
@@ -218,6 +215,12 @@ body {
 .dashboard-logo {
   width: 90px;
   height: auto;
+}
+
+.dashboard-bell-icon {
+  color: white;
+  font-size: 18px;
+  line-height: 1;
 }
 
 .dashboard-greeting {
@@ -321,6 +324,13 @@ body {
   align-items: center;
   gap: 6px;
   margin-bottom: 6px;
+}
+
+.location-map-icon {
+  font-size: 18px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
 }
 
 .location-map-row a {
@@ -437,7 +447,8 @@ body {
 .bottom-nav-link.active .bottom-nav-label {
   color: #67d27d;
 }
-/* ===== første side splaaash ===== */
+
+/* ===== FØRSTE SIDE SPLASH ===== */
 
 .splash-page {
   min-height: 100vh;
@@ -608,7 +619,7 @@ body {
   margin: 0 0 20px 0;
 }
 
-/* mobil */
+/* MOBIL */
 @media (max-width: 600px) {
   .auth-page {
     padding: 12px 10px 30px;

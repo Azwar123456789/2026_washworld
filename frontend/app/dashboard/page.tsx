@@ -1,7 +1,5 @@
 "use client";
 
-import { Bell, MapPin } from "lucide-react";
-
 const locations = [
   {
     name: "Viby",
@@ -42,7 +40,6 @@ export default function DashboardPage() {
               alt="Wash World"
               className="dashboard-logo"
             />
-            <Bell size={18} color="white" />
           </div>
 
           <h2 className="dashboard-greeting">Hej, Jonas</h2>
@@ -77,7 +74,6 @@ export default function DashboardPage() {
                 <p>{location.address}</p>
 
                 <div className="location-map-row">
-                  <MapPin size={18} />
                   <a href="#">Vis på kort</a>
                 </div>
 
