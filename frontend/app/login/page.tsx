@@ -1,30 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { useAuth } from "../hooks/useAuth";
 import { useRouter } from "next/navigation";
 
-export default function LoginPage() {
-  const { login, isLoggingIn, error } = useAuth();
+export default function LoginWelcomePage() {
   const router = useRouter();
-
-  const [userEmail, setUserEmail] = useState("");
-  const [userPassword, setUserPassword] = useState("");
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-
-    try {
-      await login({
-        user_email: userEmail,
-        user_password: userPassword,
-      });
-
-      router.push("/dashboard");
-    } catch (err) {
-      console.log("Login failed", err);
-    }
-  }
 
   return (
     <main className="login-page">
@@ -44,31 +23,13 @@ export default function LoginPage() {
             Scan QR og undgå ventetid
           </p>
 
-          <form onSubmit={handleSubmit} className="login-form">
-            <input
-              className="login-input"
-              placeholder="Email"
-              type="email"
-              value={userEmail}
-              onChange={(e) => setUserEmail(e.target.value)}
-            />
-
-            <input
-              className="login-input"
-              placeholder="Password"
-              type="password"
-              value={userPassword}
-              onChange={(e) => setUserPassword(e.target.value)}
-            />
-
-            <button
-              type="submit"
-              className="login-primary-button"
-              disabled={isLoggingIn}
-            >
-              {isLoggingIn ? "Logger ind..." : "Log ind"}
-            </button>
-          </form>
+          <button
+            type="button"
+            className="login-primary-button"
+            onClick={() => router.push("/login/form")}
+          >
+            Log ind
+          </button>
 
           <button
             type="button"
@@ -77,8 +38,6 @@ export default function LoginPage() {
           >
             Bliv medlem
           </button>
-
-          {error && <p className="login-error">{error}</p>}
         </div>
       </section>
     </main>

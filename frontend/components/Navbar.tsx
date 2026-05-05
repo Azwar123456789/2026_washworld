@@ -2,14 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { House, Gauge, QrCode, MapPin, User } from "lucide-react";
 
 const navItems = [
-  { href: "/dashboard", label: "HJEM", icon: House },
-  { href: "/activity", label: "AKTIVITET", icon: Gauge },
-  { href: "/access", label: "ADGANG", icon: QrCode },
-  { href: "/locations", label: "VASKEHAL", icon: MapPin },
-  { href: "/profile", label: "PROFIL", icon: User },
+  { href: "/dashboard", label: "HJEM", icon: "⌂" },
+  { href: "/activity", label: "AKTIVITET", icon: "◉" },
+  { href: "/access", label: "ADGANG", icon: "▣" },
+  { href: "/locations", label: "VASKEHAL", icon: "⌖" },
+  { href: "/profile", label: "PROFIL", icon: "♙" },
 ];
 
 export default function Navbar() {
@@ -30,7 +29,6 @@ export default function Navbar() {
   return (
     <nav className="bottom-nav">
       {navItems.map((item) => {
-        const Icon = item.icon;
         const isActive = pathname === item.href;
 
         return (
@@ -39,7 +37,7 @@ export default function Navbar() {
             href={item.href}
             className={`bottom-nav-link ${isActive ? "active" : ""}`}
           >
-            <Icon size={20} className="bottom-nav-icon" />
+            <span className="bottom-nav-icon">{item.icon}</span>
             <span className="bottom-nav-label">{item.label}</span>
           </Link>
         );
@@ -47,8 +45,3 @@ export default function Navbar() {
     </nav>
   );
 }
-
-
- //if (pathname === "/login" || pathname === "/signup") {
-  //return null;
-//}
