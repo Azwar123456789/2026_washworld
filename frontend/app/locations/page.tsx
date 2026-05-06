@@ -3,6 +3,12 @@
 import Link from "next/link";
 import { useLocations } from "../hooks/useLocations";
 
+const realAddresses: Record<string, string> = {
+  Ishøj: "Vejleåvej 19, 2635 Ishøj",
+  Taastrup: "Roskildevej 376, 2630 Taastrup",
+  "Brøndby Strand": "Gammel Køge Landevej 690, 2660 Brøndby Strand",
+};
+
 export default function LocationsPage() {
   const {
     filteredLocations,
@@ -32,7 +38,7 @@ export default function LocationsPage() {
         placeholder="Søg efter by eller adresse"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        className="w-full p-4 rounded-2xl border border-gray-200 mb-6"
+        className="w-full p-4 rounded-2xl border border-gray-200 mb-6 bg-white"
       />
 
       {/* Loading */}
@@ -52,63 +58,68 @@ export default function LocationsPage() {
       {/* Cards */}
       <div className="space-y-4">
 
-        {filteredLocations.map((location) => (
+        {filteredLocations.map((location) => {
 
-          <Link
-            key={location.location_pk}
-            href={`/locations/${location.location_pk}`}
-          >
+          const address =
+            realAddresses[location.location_name] ||
+            location.location_address;
 
-            <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 active:scale-[0.98] transition">
+          return (
+            <Link
+              key={location.location_pk}
+              href={`/locations/${location.location_pk}`}
+            >
 
-              <div className="flex justify-between items-start">
+              <div className="bg-white rounded-3xl p-5 shadow-sm border border-gray-100 active:scale-[0.98] transition">
 
-                <div>
-                  <p className="text-xs text-gray-400 uppercase">
-                    Vaskehal
-                  </p>
+                <div className="flex justify-between items-start">
 
-                  <h2 className="text-2xl font-bold mt-2">
-                    {location.location_name}
-                  </h2>
+                  <div>
+                    <p className="text-xs text-gray-400 uppercase">
+                      Vaskehal
+                    </p>
 
-                  <p className="text-gray-500 mt-2">
-                    {location.location_address}
-                  </p>
+                    <h2 className="text-2xl font-bold mt-2">
+                      {location.location_name}
+                    </h2>
 
-                  <p className="text-gray-400 text-sm mt-1">
-                    {location.location_city}
-                  </p>
+                    <p className="text-gray-500 mt-2">
+                      {address}
+                    </p>
+
+                    <p className="text-gray-400 text-sm mt-1">
+                      {location.location_city}
+                    </p>
+                  </div>
+
+                  <div className="text-right">
+                    <p className="text-xs text-gray-400">
+                      Status
+                    </p>
+
+                    <p className="font-semibold mt-1 text-green-600">
+                      Åben nu
+                    </p>
+                  </div>
                 </div>
 
-                <div className="text-right">
-                  <p className="text-xs text-gray-400">
-                    Åbningstid
-                  </p>
+                <div className="flex justify-between items-center mt-6">
 
-                  <p className="font-semibold mt-1">
-                    {location.location_opening_hours}
-                  </p>
+                  <span className="text-green-600 text-sm font-medium">
+                    ● God kapacitet
+                  </span>
+
+                  <span className="text-3xl">
+                    →
+                  </span>
+
                 </div>
-              </div>
-
-              <div className="flex justify-between items-center mt-6">
-
-                <span className="text-green-600 text-sm font-medium">
-                  ● God kapacitet
-                </span>
-
-                <span className="text-3xl">
-                  →
-                </span>
 
               </div>
 
-            </div>
-
-          </Link>
-
-        ))}
+            </Link>
+          );
+        })}
       </div>
 
       {/* Empty */}

@@ -3,6 +3,12 @@
 import { useParams } from "next/navigation";
 import { useLocations } from "../../hooks/useLocations";
 
+const realAddresses: Record<string, string> = {
+  Ishøj: "Vejleåvej 19, 2635 Ishøj",
+  Taastrup: "Roskildevej 376, 2630 Taastrup",
+  "Brøndby Strand": "Gammel Køge Landevej 690, 2660 Brøndby Strand",
+};
+
 export default function LocationDetailPage() {
   const params = useParams();
 
@@ -36,8 +42,12 @@ export default function LocationDetailPage() {
     );
   }
 
+  const address =
+    realAddresses[location.location_name] ||
+    location.location_address;
+
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-    `${location.location_address} ${location.location_city}`
+    `${address}`
   )}`;
 
   return (
@@ -55,16 +65,12 @@ export default function LocationDetailPage() {
         </h1>
 
         <p className="text-gray-300 mt-3">
-          {location.location_address}
-        </p>
-
-        <p className="text-gray-400 mt-1">
-          {location.location_city}
+          {address}
         </p>
 
       </div>
 
-      {/* Info card */}
+      {/* Info */}
       <div className="bg-white rounded-3xl p-5 mt-6 shadow-sm">
 
         <h2 className="text-2xl font-bold mb-4">
@@ -89,7 +95,7 @@ export default function LocationDetailPage() {
         </div>
       </div>
 
-      {/* Capacity */}
+      {/* Status */}
       <div className="bg-white rounded-3xl p-5 mt-6 shadow-sm">
 
         <h2 className="text-xl font-bold mb-3">
@@ -97,6 +103,7 @@ export default function LocationDetailPage() {
         </h2>
 
         <div className="flex items-center gap-2">
+
           <span className="text-green-500 text-xl">
             ●
           </span>
@@ -104,11 +111,12 @@ export default function LocationDetailPage() {
           <p className="font-medium">
             God kapacitet lige nu
           </p>
+
         </div>
 
       </div>
 
-      {/* Route button */}
+      {/* Maps button */}
       <a
         href={mapsUrl}
         target="_blank"
