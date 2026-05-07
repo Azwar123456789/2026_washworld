@@ -1,5 +1,7 @@
 "use client";
 
+import ActivityFeed from "./ActivityFeed";
+
 export default function ActivityPage() {
   return (
     <main className="dashboard-page">
@@ -19,9 +21,7 @@ export default function ActivityPage() {
           <p className="dashboard-subtitle">Klar til din næste vask?</p>
         </section>
 
-        <section className="activity-content">
-          <p>Your activity feed will appear here</p>
-        </section>
+        <ActivityFeed />
       </div>
     </main>
   );
