@@ -3,6 +3,8 @@
 import { useEffect, useRef } from "react";
 import ApexCharts from "apexcharts";
 
+const washData = [12, 5, 27, 10, 2, 6, 8, 11, 23, 13, 6, 24];
+
 const options = {
   chart: {
     type: "bar",
@@ -37,7 +39,7 @@ const options = {
   series: [
     {
       name: "Washes",
-      data: [30, 40, 45, 50, 49, 60, 70, 91, 125, 100, 110, 112],
+      data: washData,
     },
   ],
   xaxis: {
@@ -73,6 +75,8 @@ const options = {
 
 export default function ActivityFeed() {
   const chartRef = useRef<HTMLDivElement | null>(null);
+  const totalLast12Months = washData.reduce((sum, value) => sum + value, 0);
+  const last30Days = washData[washData.length - 1];
 
   useEffect(() => {
     if (!chartRef.current) return;
@@ -89,6 +93,22 @@ export default function ActivityFeed() {
     <section className="activity-content">
       <h2 className="section-title">Aktivitetslog</h2>
       <div ref={chartRef} id="activity-chart"></div>
+
+      <div className="stats-section">
+        <div className="stats-header">
+          <h3>Statistik</h3>
+        </div>
+        <div className="stats-cards">
+          <div className="stats-card">
+            <div className="stats-card-value">{totalLast12Months} vask</div>
+            <div className="stats-card-text">Sidste 12 måneder</div>
+          </div>
+          <div className="stats-card">
+            <div className="stats-card-value">{last30Days} vask</div>
+            <div className="stats-card-text">Sidste 30 dage</div>
+          </div>
+        </div>
+      </div>
     </section>
   );
 }
