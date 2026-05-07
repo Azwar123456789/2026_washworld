@@ -6,6 +6,10 @@ import ApexCharts from "apexcharts";
 const options = {
   chart: {
     type: "bar",
+    height: 600,
+    toolbar: {
+      show: false,
+    },
     events: {
       dataPointSelection(event, chartContext, config) {
         const month = config.w.config.xaxis.categories[config.dataPointIndex];
@@ -18,9 +22,18 @@ const options = {
   plotOptions: {
     bar: {
       horizontal: true,
+      barHeight: "70%",
+      columnWidth: "200%",
+      SPACEBETWEEN: 50,
     },
   },
-  colors: ["#FF661F"],
+  dataLabels: {
+    enabled: true,
+    style: {
+      colors: ["#505050"],
+    },
+  },
+  colors: ["#42BC69"],
   series: [
     {
       name: "Washes",
@@ -42,6 +55,19 @@ const options = {
       "NOV",
       "DEC",
     ],
+    labels: {
+      style: {
+        fontSize: "14px",
+        fontWeight: 900,
+      },
+    },
+  },
+  yaxis: {
+    labels: {
+      style: {
+        fontWeight: 900,
+      },
+    },
   },
 };
 
