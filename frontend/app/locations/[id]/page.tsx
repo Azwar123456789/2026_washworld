@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useLocations } from "../../hooks/useLocations";
 
@@ -19,26 +20,22 @@ export default function LocationDetailPage() {
   );
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        Loading...
-      </div>
-    );
+    return <main className="dashboard-page">Loading...</main>;
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-red-500">
-        {error}
-      </div>
+      <main className="dashboard-page">
+        <p className="login-error">{error}</p>
+      </main>
     );
   }
 
   if (!location) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <main className="dashboard-page">
         Location not found
-      </div>
+      </main>
     );
   }
 
@@ -47,85 +44,99 @@ export default function LocationDetailPage() {
     location.location_address;
 
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-    `${address}`
+    address
   )}`;
 
   return (
-    <div className="min-h-screen bg-[#f5f5f5] p-4">
+    <main className="dashboard-page">
 
-      {/* Header */}
-      <div className="bg-black text-white rounded-3xl p-6">
+      <div className="dashboard-shell">
 
-        <p className="text-sm text-gray-400 uppercase">
-          Vaskehal
-        </p>
+        {/* Hero */}
+        <section className="dashboard-hero">
 
-        <h1 className="text-4xl font-bold mt-2">
-          {location.location_name}
-        </h1>
+          <div className="dashboard-hero-top">
 
-        <p className="text-gray-300 mt-3">
-          {address}
-        </p>
+            <Link
+              href="/locations"
+              style={{
+                color: "#69d27f",
+                textDecoration: "none",
+                fontWeight: "bold",
+              }}
+            >
+              ← Tilbage
+            </Link>
 
-      </div>
+          </div>
 
-      {/* Info */}
-      <div className="bg-white rounded-3xl p-5 mt-6 shadow-sm">
+          <h1 className="dashboard-greeting">
+            {location.location_name}
+          </h1>
 
-        <h2 className="text-2xl font-bold mb-4">
-          Information
-        </h2>
+          <p className="dashboard-subtitle">
+            {address}
+          </p>
 
-        <div className="space-y-3 text-gray-600">
+        </section>
 
-          <p>
-            🕒 Åbningstid:
-            <span className="font-medium ml-2">
+        {/* Location image */}
+        <section className="locations-section">
+
+          <img
+            src="https://images.unsplash.com/photo-1607860108855-64acf2078ed9?q=80&w=1200&auto=format&fit=crop"
+            alt="Washhall"
+            className="location-image"
+            style={{
+              height: "220px",
+              marginBottom: "18px",
+            }}
+          />
+
+          <h2 className="section-title">
+            Information
+          </h2>
+
+          <div className="location-info">
+
+            <p>
+              🕒 Åbningstid:
+              {" "}
               {location.location_opening_hours}
-            </span>
-          </p>
+            </p>
 
-          <p>🧼 Moderne vaskehal</p>
+            <p>
+              🧼 Moderne vaskehal
+            </p>
 
-          <p>🚗 Hurtig og effektiv vask</p>
+            <p>
+              🚗 Hurtig og effektiv vask
+            </p>
 
-          <p>🌱 Miljøvenlige produkter</p>
+            <p>
+              🌱 Miljøvenlige produkter
+            </p>
 
-        </div>
+            <p className="location-distance">
+              ● God kapacitet lige nu
+            </p>
+
+          </div>
+
+          <a
+            href={mapsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <button className="show-more-button">
+              Rutevejledning
+            </button>
+          </a>
+
+        </section>
+
       </div>
 
-      {/* Status */}
-      <div className="bg-white rounded-3xl p-5 mt-6 shadow-sm">
-
-        <h2 className="text-xl font-bold mb-3">
-          Status
-        </h2>
-
-        <div className="flex items-center gap-2">
-
-          <span className="text-green-500 text-xl">
-            ●
-          </span>
-
-          <p className="font-medium">
-            God kapacitet lige nu
-          </p>
-
-        </div>
-
-      </div>
-
-      {/* Maps button */}
-      <a
-        href={mapsUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="block mt-8 bg-green-500 text-center text-black font-bold py-4 rounded-3xl text-lg"
-      >
-        Rutevejledning
-      </a>
-
-    </div>
+    </main>
   );
 }

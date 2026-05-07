@@ -19,115 +19,135 @@ export default function LocationsPage() {
   } = useLocations();
 
   return (
-    <div className="min-h-screen bg-[#f5f5f5] p-4">
+    <main className="dashboard-page">
 
-      {/* Logo */}
-      <div className="bg-black rounded-2xl p-4 flex justify-center mb-6">
-        <h1 className="text-white text-4xl font-bold tracking-widest">
-          WASH WORLD
+      <div className="dashboard-shell">
+
+        {/* Top title */}
+        <h1 className="dashboard-top-title">
+          Find vaskehal
         </h1>
-      </div>
 
-      {/* Title */}
-      <h1 className="text-3xl font-bold text-center mb-6">
-        Find vaskehal
-      </h1>
+        {/* Hero */}
+        <section className="dashboard-hero">
 
-      {/* Search */}
-      <input
-        placeholder="Søg efter by eller adresse"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="w-full p-4 rounded-2xl border border-gray-200 mb-6 bg-white"
-      />
+          <div className="dashboard-hero-top">
 
-      {/* Loading */}
-      {isLoading && (
-        <p className="text-center">
-          Loading locations...
-        </p>
-      )}
+            <h2 className="dashboard-greeting">
+              Wash World
+            </h2>
 
-      {/* Error */}
-      {error && (
-        <p className="text-red-500 text-center">
-          {error}
-        </p>
-      )}
+            <div className="dashboard-bell-icon">
+              📍
+            </div>
 
-      {/* Cards */}
-      <div className="space-y-4">
+          </div>
 
-        {filteredLocations.map((location) => {
+          <p className="dashboard-subtitle">
+            Find nærmeste vaskehal og få rutevejledning
+          </p>
 
-          const address =
-            realAddresses[location.location_name] ||
-            location.location_address;
+        </section>
 
-          return (
-            <Link
-              key={location.location_pk}
-              href={`/locations/${location.location_pk}`}
-            >
+        {/* Search */}
+        <input
+          placeholder="Søg efter by eller adresse"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="login-input"
+          style={{ marginBottom: "20px" }}
+        />
 
-              <div className="bg-white rounded-3xl p-5 shadow-sm border border-gray-100 active:scale-[0.98] transition">
+        {/* Loading */}
+        {isLoading && <p>Loading locations...</p>}
 
-                <div className="flex justify-between items-start">
+        {/* Error */}
+        {error && (
+          <p className="login-error">
+            {error}
+          </p>
+        )}
 
-                  <div>
-                    <p className="text-xs text-gray-400 uppercase">
-                      Vaskehal
-                    </p>
+        {/* Locations */}
+        <section className="locations-section">
 
-                    <h2 className="text-2xl font-bold mt-2">
-                      {location.location_name}
-                    </h2>
+          <h2 className="section-title">
+            Wash World lokationer
+          </h2>
 
-                    <p className="text-gray-500 mt-2">
-                      {address}
-                    </p>
+          {filteredLocations.map((location) => {
 
-                    <p className="text-gray-400 text-sm mt-1">
-                      {location.location_city}
-                    </p>
+            const address =
+              realAddresses[location.location_name] ||
+              location.location_address;
+
+            return (
+
+              <div
+                className="location-card"
+                key={location.location_pk}
+              >
+
+                {/* Image */}
+                <img
+                  src="https://images.unsplash.com/photo-1607860108855-64acf2078ed9?q=80&w=1200&auto=format&fit=crop"
+                  alt="Washhall"
+                  className="location-image"
+                />
+
+                {/* Info */}
+                <div className="location-info">
+
+                  <h4>
+                    {location.location_name}
+                  </h4>
+
+                  <p>
+                    {address}
+                  </p>
+
+                  <p className="location-distance">
+                    Åben nu
+                  </p>
+
+                  <div className="location-map-row">
+
+                    <span className="location-map-icon">
+                      📍
+                    </span>
+
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Åbn i Maps
+                    </a>
+
                   </div>
 
-                  <div className="text-right">
-                    <p className="text-xs text-gray-400">
-                      Status
-                    </p>
-
-                    <p className="font-semibold mt-1 text-green-600">
-                      Åben nu
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex justify-between items-center mt-6">
-
-                  <span className="text-green-600 text-sm font-medium">
-                    ● God kapacitet
-                  </span>
-
-                  <span className="text-3xl">
-                    →
-                  </span>
+                  <Link
+                    href={`/locations/${location.location_pk}`}
+                    className="location-more"
+                  >
+                    Se mere
+                  </Link>
 
                 </div>
 
               </div>
+            );
+          })}
 
-            </Link>
-          );
-        })}
+          {/* Empty */}
+          {filteredLocations.length === 0 && (
+            <p>No locations found</p>
+          )}
+
+        </section>
+
       </div>
 
-      {/* Empty */}
-      {filteredLocations.length === 0 && (
-        <p className="text-center mt-6 text-gray-500">
-          No locations found
-        </p>
-      )}
-    </div>
+    </main>
   );
 }
