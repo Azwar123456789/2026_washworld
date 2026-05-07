@@ -3,6 +3,7 @@
 
 https: "use client";
 
+import Link from "next/link";
 import { useEffect, useRef } from "react";
 import ApexCharts from "apexcharts";
 
@@ -94,7 +95,11 @@ export default function ActivityFeed() {
 
   return (
     <section className="activity-content">
-      <h2 className="section-title">Aktivitetslog</h2>
+      <h2 className="section-title">
+        <Link href="/activity/Activitylog" className="activity-log-link">
+          Aktivitetslog
+        </Link>
+      </h2>
       <div ref={chartRef} id="activity-chart"></div>
 
       <div className="stats-section">

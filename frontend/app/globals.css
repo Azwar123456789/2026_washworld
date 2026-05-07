@@ -318,6 +318,15 @@ body {
   gap: 12px;
 }
 
+.activity-log-link {
+  color: #111827;
+  text-decoration: none;
+}
+
+.activity-log-link:hover {
+  text-decoration: underline;
+}
+
 .stats-card {
   background: #00000014;
   padding: 16px;
