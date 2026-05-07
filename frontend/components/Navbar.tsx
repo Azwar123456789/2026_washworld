@@ -22,14 +22,20 @@ export default function Navbar() {
     "/profile",
   ];
 
-  if (!showNavbarRoutes.includes(pathname)) {
+  const shouldShowNavbar = showNavbarRoutes.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`),
+  );
+
+  if (!shouldShowNavbar) {
     return null;
   }
 
   return (
     <nav className="bottom-nav">
       {navItems.map((item) => {
-        const isActive = pathname === item.href;
+        const isActive =
+          pathname === item.href ||
+          (item.href === "/activity" && pathname.startsWith("/activity/"));
 
         return (
           <Link
