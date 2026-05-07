@@ -97,7 +97,7 @@ export default function ActivityFeed() {
     <section className="activity-content">
       <h2 className="section-title">
         <Link href="/activity/Activitylog" className="activity-log-link">
-          Aktivitetslog
+          Aktivitetslog 🡲
         </Link>
       </h2>
       <div ref={chartRef} id="activity-chart"></div>

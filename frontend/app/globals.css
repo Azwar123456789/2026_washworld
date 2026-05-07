@@ -289,10 +289,11 @@ body {
 }
 
 .section-title {
-  text-align: center;
+  /* text-align: center; */
+  margin: 0 0 18px 20px;
   font-size: 18px;
-  margin: 0 0 18px 0;
   font-weight: 800;
+  text-decoration: underline;
 }
 
 .stats-section {

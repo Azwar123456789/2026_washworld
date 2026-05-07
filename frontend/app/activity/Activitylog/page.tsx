@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/dist/client/link";
+
 export default function ActivityLogPage() {
   const recentWashes = [
     {
@@ -43,7 +45,11 @@ export default function ActivityLogPage() {
         </section>
 
         <section className="activity-section">
-          <p className="activity-subtitle">Seneste vaske</p>
+          <h2 className="section-title">
+            <Link href="/activity" className="activity-log-link">
+              🡰 Seneste vaske
+            </Link>
+          </h2>
 
           <div className="activity-list">
             {recentWashes.map((wash) => (
