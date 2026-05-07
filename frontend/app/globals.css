@@ -198,6 +198,156 @@ body {
   margin: 0 0 14px 0;
 }
 
+.activity-page-top {
+  margin-bottom: 22px;
+}
+
+.activity-logo-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0px;
+  margin-bottom: 12px;
+}
+
+.wash-text {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.world-text {
+  font-size: 14px;
+  letter-spacing: 0.14em;
+  color: #111827;
+  margin-top: -2px;
+}
+
+.activity-main-title {
+  font-size: 44px;
+  line-height: 1;
+  margin: 0;
+  font-weight: 800;
+}
+
+.activity-section {
+  background: #ffffff;
+  padding: 16px;
+  border-radius: 18px;
+  margin-bottom: 18px;
+}
+
+.activity-subtitle {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 18px 0;
+}
+
+.activity-list {
+  display: grid;
+  gap: 16px;
+}
+
+.activity-card {
+  display: grid;
+  grid-template-columns: 60px 1fr;
+  gap: 16px;
+  align-items: center;
+  background: #f4f4f4;
+  border-radius: 18px;
+  padding: 16px;
+}
+
+.activity-card-icon {
+  width: 60px;
+  height: 60px;
+  background: #e8f7ee;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  font-size: 24px;
+}
+
+.activity-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.activity-card-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.activity-card-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.activity-card-location {
+  margin: 4px 0 0 0;
+  font-size: 14px;
+  color: #4b5563;
+}
+
+.activity-card-price {
+  font-size: 16px;
+  font-weight: 800;
+  color: #111827;
+}
+
+.activity-card-date {
+  margin: 0;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.savings-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.saving-card {
+  display: grid;
+  grid-template-columns: 60px 1fr;
+  gap: 16px;
+  align-items: center;
+  background: #f4f4f4;
+  border-radius: 18px;
+  padding: 16px;
+}
+
+.saving-card-icon {
+  width: 60px;
+  height: 60px;
+  background: #e8f7ee;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  font-size: 28px;
+}
+
+.saving-card-title {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.saving-card-value {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  color: #111827;
+}
+
+.saving-card-note {
+  margin: 6px 0 0 0;
+  font-size: 13px;
+  color: #6b7280;
+}
+
 .dashboard-hero {
   background: #000;
   color: white;

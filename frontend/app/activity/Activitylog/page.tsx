@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/dist/client/link";
+import Link from "next/link";
 
 export default function ActivityLogPage() {
   const recentWashes = [
@@ -27,7 +27,7 @@ export default function ActivityLogPage() {
   return (
     <main className="dashboard-page">
       <div className="dashboard-shell">
-        <h1 className="dashboard-top-title">Aktivitetslog</h1>
+        <h1 className="dashboard-top-title">Aktiviteter</h1>
 
         <section className="dashboard-hero">
           <div className="dashboard-hero-top">
@@ -39,15 +39,13 @@ export default function ActivityLogPage() {
           </div>
 
           <h2 className="dashboard-greeting">Hej, Jonas</h2>
-          <p className="dashboard-subtitle">
-            Se dine seneste vask og besparelser
-          </p>
+          <p className="dashboard-subtitle">Se dine seneste vask og besparelser</p>
         </section>
 
         <section className="activity-section">
           <h2 className="section-title">
             <Link href="/activity" className="activity-log-link">
-              🡰 Seneste vaske
+              ← Seneste vaske
             </Link>
           </h2>
 
@@ -58,19 +56,19 @@ export default function ActivityLogPage() {
                 <div className="activity-card-content">
                   <div className="activity-card-top">
                     <div>
-                      <h2>{wash.title}</h2>
-                      <p>{wash.location}</p>
+                      <p className="activity-card-title">{wash.title}</p>
+                      <p className="activity-card-location">{wash.location}</p>
                     </div>
                     <span className="activity-card-price">{wash.price}</span>
                   </div>
-                  <div className="activity-card-date">{wash.date}</div>
+                  <p className="activity-card-date">{wash.date}</p>
                 </div>
               </article>
             ))}
           </div>
         </section>
 
-        <section className="savings-section">
+        <section className="activity-section">
           <p className="activity-subtitle">Dine besparelser</p>
 
           <div className="savings-grid">
