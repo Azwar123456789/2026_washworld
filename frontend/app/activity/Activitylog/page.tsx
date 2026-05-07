@@ -39,7 +39,9 @@ export default function ActivityLogPage() {
           </div>
 
           <h2 className="dashboard-greeting">Hej, Jonas</h2>
-          <p className="dashboard-subtitle">Se dine seneste vask og besparelser</p>
+          <p className="dashboard-subtitle">
+            Se dine seneste vask og besparelser
+          </p>
         </section>
 
         <section className="activity-section">
