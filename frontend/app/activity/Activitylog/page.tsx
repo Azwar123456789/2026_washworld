@@ -23,12 +23,24 @@ export default function ActivityLogPage() {
   ];
 
   return (
-    <main className="activity-page">
-      <div className="activity-shell">
-        <header className="activity-header">
-          <p className="activity-label">WASH WORLD</p>
-          <h1>Aktiviteter</h1>
-        </header>
+    <main className="dashboard-page">
+      <div className="dashboard-shell">
+        <h1 className="dashboard-top-title">Aktivitetslog</h1>
+
+        <section className="dashboard-hero">
+          <div className="dashboard-hero-top">
+            <img
+              src="/images/washworld-logo.png"
+              alt="Wash World"
+              className="dashboard-logo"
+            />
+          </div>
+
+          <h2 className="dashboard-greeting">Hej, Jonas</h2>
+          <p className="dashboard-subtitle">
+            Se dine seneste vask og besparelser
+          </p>
+        </section>
 
         <section className="activity-section">
           <p className="activity-subtitle">Seneste vaske</p>
