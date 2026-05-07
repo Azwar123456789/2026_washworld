@@ -1,4 +1,7 @@
-"use client";
+//NPM INSTALLATION
+//apexcharts.com/docs/installation/
+
+https: "use client";
 
 import { useEffect, useRef } from "react";
 import ApexCharts from "apexcharts";
