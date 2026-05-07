@@ -307,16 +307,18 @@ body {
 .savings-grid {
   display: grid;
   gap: 12px;
+  grid-auto-flow: column;
 }
 
 .saving-card {
   display: grid;
-  grid-template-columns: 60px 1fr;
+  grid-template-rows: auto 1fr;
   gap: 16px;
   align-items: center;
   background: #f4f4f4;
   border-radius: 18px;
   padding: 16px;
+  justify-items: center;
 }
 
 .saving-card-icon {
