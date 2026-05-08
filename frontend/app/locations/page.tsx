@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useLocations } from "../hooks/useLocations";
 
 const realAddresses: Record<string, string> = {
   Ishøj: "Vejleåvej 19, 2635 Ishøj",
   Taastrup: "Roskildevej 376, 2630 Taastrup",
   "Brøndby Strand": "Gammel Køge Landevej 690, 2660 Brøndby Strand",
+  Ballerup: "Skovvej 4, 2750 Ballerup",
 };
 
 const locationCoordinates: Record<
@@ -27,6 +29,11 @@ const locationCoordinates: Record<
     lat: 55.621725,
     lng: 12.411472,
   },
+
+  Ballerup: {
+    lat: 55.731226,
+    lng: 12.363456,
+  },
 };
 
 export default function LocationsPage() {
@@ -39,61 +46,138 @@ export default function LocationsPage() {
   } = useLocations();
 
   return (
-    <main className="dashboard-page">
+    <main
+      style={{
+        minHeight: "100vh",
+        background: "#efefef",
+        paddingBottom: "100px",
+      }}
+    >
 
-      <div className="dashboard-shell">
+      <div
+        style={{
+          maxWidth: "420px",
+          margin: "0 auto",
+          padding: "10px",
+        }}
+      >
 
-        {/* Top title */}
-        <h1 className="dashboard-top-title">
-          Find vaskehal
+        {/* Small title */}
+        <h1
+          style={{
+            fontSize: "16px",
+            color: "#b5b5b5",
+            marginBottom: "8px",
+          }}
+        >
+          Find Vaskehal (Ultra-minimalistisk)
         </h1>
 
-        {/* Hero */}
-        <section className="dashboard-hero">
+        {/* Logo */}
+        <div
+          style={{
+            background: "#000",
+            padding: "16px",
+            display: "flex",
+            justifyContent: "center",
+            marginBottom: "16px",
+          }}
+        >
 
-          <div className="dashboard-hero-top">
+          <Image
+            src="/washworld-logo.png"
+            alt="Wash World"
+            width={220}
+            height={70}
+          />
 
-            <h2 className="dashboard-greeting">
-              Wash World
-            </h2>
+        </div>
 
-            <div className="dashboard-bell-icon">
-              📍
-            </div>
-
-          </div>
-
-          <p className="dashboard-subtitle">
-            Find nærmeste vaskehal og få rutevejledning
-          </p>
-
-        </section>
+        {/* Title */}
+        <h2
+          style={{
+            textAlign: "center",
+            fontSize: "18px",
+            fontWeight: 700,
+            marginBottom: "18px",
+          }}
+        >
+          Find vaskehal
+        </h2>
 
         {/* Search */}
-        <input
-          placeholder="Søg efter by eller adresse"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="login-input"
-          style={{ marginBottom: "20px" }}
-        />
+        <div
+          style={{
+            background: "white",
+            borderRadius: "10px",
+            border: "1px solid #ddd",
+            padding: "12px 14px",
+            marginBottom: "14px",
+          }}
+        >
+
+          <input
+            placeholder="Søg"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={{
+              border: "none",
+              outline: "none",
+              width: "100%",
+              fontSize: "14px",
+              background: "transparent",
+            }}
+          />
+
+        </div>
+
+        {/* Filter buttons */}
+        <div
+          style={{
+            display: "flex",
+            gap: "8px",
+            marginBottom: "18px",
+          }}
+        >
+
+          {["God kapacitet", "Åben nu", "Afstand"].map((filter) => (
+
+            <button
+              key={filter}
+              style={{
+                flex: 1,
+                background: "white",
+                border: "1px solid #d9d9d9",
+                borderRadius: "8px",
+                padding: "10px 8px",
+                fontSize: "11px",
+              }}
+            >
+              {filter}
+            </button>
+
+          ))}
+
+        </div>
 
         {/* Loading */}
-        {isLoading && <p>Loading locations...</p>}
+        {isLoading && <p>Loading...</p>}
 
         {/* Error */}
         {error && (
-          <p className="login-error">
+          <p style={{ color: "red" }}>
             {error}
           </p>
         )}
 
-        {/* Locations */}
-        <section className="locations-section">
-
-          <h2 className="section-title">
-            Wash World lokationer
-          </h2>
+        {/* Cards */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "14px",
+          }}
+        >
 
           {filteredLocations.map((location) => {
 
@@ -110,68 +194,155 @@ export default function LocationsPage() {
 
             return (
 
-              <div
-                className="location-card"
+              <Link
                 key={location.location_pk}
+                href={`/locations/${location.location_pk}`}
+                style={{
+                  textDecoration: "none",
+                  color: "inherit",
+                }}
               >
 
-                {/* Image */}
-                <img
-                  src="/image.png"
-                  alt="Washhall"
-                  className="location-image"
-                />
+                <div
+                  style={{
+                    background: "white",
+                    borderRadius: "12px",
+                    padding: "14px",
+                    border: "1px solid #e4e4e4",
+                  }}
+                >
 
-                {/* Info */}
-                <div className="location-info">
+                  {/* Top */}
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      marginBottom: "12px",
+                    }}
+                  >
 
-                  <h4>
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "8px",
+                        alignItems: "center",
+                      }}
+                    >
+
+                      <span
+                        style={{
+                          fontSize: "9px",
+                          color: "#888",
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        Vaskehal
+                      </span>
+
+                      <span
+                        style={{
+                          width: "6px",
+                          height: "6px",
+                          background: "#67d27d",
+                          borderRadius: "50%",
+                        }}
+                      />
+
+                      <span
+                        style={{
+                          fontSize: "9px",
+                          color: "#888",
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        God kapacitet
+                      </span>
+
+                    </div>
+
+                    <div
+                      style={{
+                        textAlign: "right",
+                      }}
+                    >
+
+                      <div
+                        style={{
+                          fontSize: "9px",
+                          color: "#888",
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        Afstand
+                      </div>
+
+                      <div
+                        style={{
+                          fontWeight: 700,
+                          fontSize: "14px",
+                        }}
+                      >
+                        2.4 km
+                      </div>
+
+                    </div>
+
+                  </div>
+
+                  {/* Name */}
+                  <h3
+                    style={{
+                      margin: "0 0 6px 0",
+                      fontSize: "28px",
+                      fontWeight: 700,
+                    }}
+                  >
                     {location.location_name}
-                  </h4>
+                  </h3>
 
-                  <p>
-                    {address}
+                  {/* Address */}
+                  <p
+                    style={{
+                      margin: 0,
+                      color: "#777",
+                      fontSize: "13px",
+                    }}
+                  >
+                    📍 {address}
                   </p>
 
-                  <p className="location-distance">
-                    Åben nu
-                  </p>
-
-                  <div className="location-map-row">
-
-                    <span className="location-map-icon">
-                      📍
-                    </span>
+                  {/* Arrow */}
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "flex-end",
+                      marginTop: "10px",
+                    }}
+                  >
 
                     <a
                       href={mapsUrl}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      style={{
+                        fontSize: "34px",
+                        textDecoration: "none",
+                        color: "#111",
+                      }}
                     >
-                      Åbn i Maps
+                      →
                     </a>
 
                   </div>
 
-                  <Link
-                    href={`/locations/${location.location_pk}`}
-                    className="location-more"
-                  >
-                    Se mere
-                  </Link>
-
                 </div>
 
-              </div>
+              </Link>
             );
           })}
 
-          {/* Empty */}
-          {filteredLocations.length === 0 && (
-            <p>No locations found</p>
-          )}
-
-        </section>
+        </div>
 
       </div>
 
