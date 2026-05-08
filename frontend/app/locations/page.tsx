@@ -9,6 +9,26 @@ const realAddresses: Record<string, string> = {
   "Brøndby Strand": "Gammel Køge Landevej 690, 2660 Brøndby Strand",
 };
 
+const locationCoordinates: Record<
+  string,
+  { lat: number; lng: number }
+> = {
+  Ishøj: {
+    lat: 55.615676,
+    lng: 12.351193,
+  },
+
+  Taastrup: {
+    lat: 55.652414,
+    lng: 12.301533,
+  },
+
+  "Brøndby Strand": {
+    lat: 55.621725,
+    lng: 12.411472,
+  },
+};
+
 export default function LocationsPage() {
   const {
     filteredLocations,
@@ -81,6 +101,13 @@ export default function LocationsPage() {
               realAddresses[location.location_name] ||
               location.location_address;
 
+            const coords =
+              locationCoordinates[location.location_name];
+
+            const mapsUrl = coords
+              ? `https://www.google.com/maps/dir/?api=1&destination=${coords.lat},${coords.lng}`
+              : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+
             return (
 
               <div
@@ -90,7 +117,7 @@ export default function LocationsPage() {
 
                 {/* Image */}
                 <img
-                  src="https://images.unsplash.com/photo-1607860108855-64acf2078ed9?q=80&w=1200&auto=format&fit=crop"
+                  src="/image.png"
                   alt="Washhall"
                   className="location-image"
                 />
@@ -117,7 +144,7 @@ export default function LocationsPage() {
                     </span>
 
                     <a
-                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`}
+                      href={mapsUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                     >

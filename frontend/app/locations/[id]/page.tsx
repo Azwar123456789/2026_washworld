@@ -10,6 +10,26 @@ const realAddresses: Record<string, string> = {
   "Brøndby Strand": "Gammel Køge Landevej 690, 2660 Brøndby Strand",
 };
 
+const locationCoordinates: Record<
+  string,
+  { lat: number; lng: number }
+> = {
+  Ishøj: {
+    lat: 55.615676,
+    lng: 12.351193,
+  },
+
+  Taastrup: {
+    lat: 55.652414,
+    lng: 12.301533,
+  },
+
+  "Brøndby Strand": {
+    lat: 55.621725,
+    lng: 12.411472,
+  },
+};
+
 export default function LocationDetailPage() {
   const params = useParams();
 
@@ -43,9 +63,12 @@ export default function LocationDetailPage() {
     realAddresses[location.location_name] ||
     location.location_address;
 
-  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-    address
-  )}`;
+  const coords =
+    locationCoordinates[location.location_name];
+
+  const mapsUrl = coords
+    ? `https://www.google.com/maps/dir/?api=1&destination=${coords.lat},${coords.lng}`
+    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
 
   return (
     <main className="dashboard-page">
@@ -80,7 +103,7 @@ export default function LocationDetailPage() {
 
         </section>
 
-        {/* Location image */}
+        {/* Image */}
         <section className="locations-section">
 
           <img
