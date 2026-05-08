@@ -102,12 +102,59 @@ CREATE TABLE `wash_locations` (
 -- Data dump for tabellen `wash_locations`
 --
 
-INSERT INTO `wash_locations` (`location_pk`, `location_name`, `location_city`, `location_address`, `location_opening_hours`) VALUES
-('loc001', 'Wash World Køge', 'Køge', 'Køge Centrum 1', '06:00 - 22:00'),
-('loc002', 'Wash World Ishøj', 'Ishøj', 'Ishøj Bycenter 10', '06:00 - 22:00'),
-('loc003', 'Wash World Roskilde', 'Roskilde', 'Roskildevej 55', '07:00 - 21:00'),
-('loc004', 'Wash World Greve', 'Greve', 'Greve Main Street 20', '06:00 - 22:00');
+INSERT INTO `wash_locations`
+(`location_pk`, `location_name`, `location_city`, `location_address`, `location_opening_hours`)
+VALUES
 
+('loc001', 'Wash World Køge', 'Køge', 'Københavnsvej 86, 4600 Køge', '07:00 - 22:00'),
+
+('loc002', 'Wash World Ishøj', 'Ishøj', 'Vejleåvej 19, 2635 Ishøj', '07:00 - 22:00'),
+
+('loc003', 'Wash World Roskilde', 'Roskilde', 'Ringstedvej 73, 4000 Roskilde', '07:00 - 22:00'),
+
+('loc004', 'Wash World Taastrup', 'Taastrup', 'Roskildevej 376, 2630 Taastrup', '07:00 - 22:00'),
+
+('loc005', 'Wash World Ballerup', 'Ballerup', 'Industriparken 6, 2750 Ballerup', '07:00 - 22:00'),
+
+('loc006', 'Wash World Herlev', 'Herlev', 'Nørrelundvej 2, 2730 Herlev', '07:00 - 22:00'),
+
+('loc007', 'Wash World Hillerød', 'Hillerød', 'Industrivænget 3, 3400 Hillerød', '07:00 - 22:00'),
+
+('loc008', 'Wash World Farum', 'Farum', 'Gammelgårdsvej 84, 3520 Farum', '07:00 - 22:00'),
+
+('loc009', 'Wash World Holbæk', 'Holbæk', 'Springstrup 5, 4300 Holbæk', '07:00 - 22:00'),
+
+('loc010', 'Wash World Kalundborg', 'Kalundborg', 'Holbækvej 74, 4400 Kalundborg', '07:00 - 22:00'),
+
+('loc011', 'Wash World Slagelse', 'Slagelse', 'Idagårdsvej 2, 4200 Slagelse', '07:00 - 22:00'),
+
+('loc012', 'Wash World Ringsted', 'Ringsted', 'Nørregade 70, 4100 Ringsted', '07:00 - 22:00'),
+
+('loc013', 'Wash World Vordingborg', 'Vordingborg', 'Valdemarsgade 57, 4760 Vordingborg', '07:00 - 22:00'),
+
+('loc014', 'Wash World Nykøbing Falster', 'Nykøbing Falster', 'Guldborgsundcentret 32, 4800 Nykøbing Falster', '07:00 - 22:00'),
+
+('loc015', 'Wash World Odense', 'Odense', 'Nyborgvej 343, 5220 Odense', '07:00 - 22:00'),
+
+('loc016', 'Wash World Odense SØ', 'Odense SØ', 'Ørbækvej 99, 5220 Odense SØ', '07:00 - 22:00'),
+
+('loc017', 'Wash World Fredericia', 'Fredericia', 'Vejlevej 20, 7000 Fredericia', '07:00 - 22:00'),
+
+('loc018', 'Wash World Kolding', 'Kolding', 'Vejlevej 132, 6000 Kolding', '07:00 - 22:00'),
+
+('loc019', 'Wash World Esbjerg', 'Esbjerg', 'Sædding Ringvej 6, 6710 Esbjerg', '07:00 - 22:00'),
+
+('loc020', 'Wash World Silkeborg', 'Silkeborg', 'Nordre Ringvej 90, 8600 Silkeborg', '07:00 - 22:00'),
+
+('loc021', 'Wash World Viborg', 'Viborg', 'Falkevej 25, 8800 Viborg', '07:00 - 22:00'),
+
+('loc022', 'Wash World Herning', 'Herning', 'Dæmningen 21, 7400 Herning', '07:00 - 22:00'),
+
+('loc023', 'Wash World Randers', 'Randers', 'Messingvej 10, 8940 Randers', '07:00 - 22:00'),
+
+('loc024', 'Wash World Aalborg Gug', 'Aalborg', 'Gammel Vissevej 1C, 9210 Aalborg', '07:00 - 22:00'),
+
+('loc025', 'Wash World Nørresundby', 'Nørresundby', 'Loftbrovej 2, 9400 Nørresundby', '07:00 - 22:00');
 --
 -- Begrænsninger for dumpede tabeller
 --
