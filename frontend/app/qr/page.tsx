@@ -4,56 +4,131 @@ import Image from "next/image";
 
 export default function QRPage() {
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col p-4">
-      
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">
-          Scan QR koden
+    <main className="dashboard-page">
+
+      <div className="dashboard-shell">
+
+        {/* Small title */}
+        <h1 className="dashboard-top-title">
+          QR kode
         </h1>
 
-        <p className="text-zinc-400 text-sm mt-1">
-          Scan QR koden i vaskehallen
-        </p>
+        {/* Header */}
+        <section
+          style={{
+            background: "#000",
+            padding: "14px",
+            marginBottom: "16px",
+          }}
+        >
+
+          {/* Logo */}
+          <div
+            style={{
+              marginBottom: "22px",
+            }}
+          >
+
+            <Image
+              src="/washworld-logo.png"
+              alt="Wash World"
+              width={110}
+              height={40}
+            />
+
+          </div>
+
+          {/* Title */}
+          <h2
+            style={{
+              color: "#67d27d",
+              fontSize: "22px",
+              fontWeight: 800,
+              margin: "0 0 10px 0",
+            }}
+          >
+            Scan QR koden
+          </h2>
+
+          <p
+            style={{
+              color: "white",
+              fontSize: "13px",
+              margin: 0,
+            }}
+          >
+            Hold din telefon op foran scanneren på maskinen
+          </p>
+
+        </section>
+
+        {/* QR Card */}
+        <section
+          style={{
+            background: "#efefef",
+            padding: "12px",
+            marginBottom: "18px",
+          }}
+        >
+
+          {/* User */}
+          <div
+            style={{
+              background: "#f8f8f8",
+              padding: "12px",
+              textAlign: "center",
+              marginBottom: "14px",
+            }}
+          >
+
+            <h3
+              style={{
+                margin: "0 0 8px 0",
+                fontSize: "16px",
+                fontWeight: 700,
+              }}
+            >
+              Jonas Dereck
+            </h3>
+
+            <p
+              style={{
+                margin: 0,
+                fontSize: "13px",
+                color: "#444",
+              }}
+            >
+              ◉ 832 842
+            </p>
+
+          </div>
+
+          {/* QR */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
+
+            <Image
+              src="/qr-placeholder.png"
+              alt="QR kode"
+              width={280}
+              height={280}
+              style={{
+                width: "100%",
+                maxWidth: "280px",
+                height: "auto",
+              }}
+            />
+
+          </div>
+
+        </section>
+
       </div>
 
-      {/* QR Card */}
-      <div className="bg-white rounded-3xl p-6 flex flex-col items-center shadow-lg">
-
-        <Image
-          src="/qr-placeholder.png"
-          alt="QR kode"
-          width={220}
-          height={220}
-          className="rounded-xl"
-        />
-
-        <p className="text-black font-semibold mt-4">
-          Aktiv QR kode
-        </p>
-
-        <p className="text-zinc-500 text-sm mt-1">
-          Gyldig i 05:00
-        </p>
-      </div>
-
-      {/* Info Card */}
-      <div className="bg-zinc-900 rounded-2xl p-4 mt-6">
-        <h2 className="font-semibold mb-2">
-          Sådan virker det
-        </h2>
-
-        <ul className="text-sm text-zinc-400 space-y-2">
-          <li>• Kør til vaskehallen</li>
-          <li>• Scan QR koden ved indgangen</li>
-          <li>• Start din vask automatisk</li>
-        </ul>
-      </div>
-
-      {/* Button */}
-      <button className="mt-auto bg-green-500 text-black font-semibold py-3 rounded-2xl">
-        Tilbage
-      </button>
-    </div>
+    </main>
   );
 }

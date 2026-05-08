@@ -17,7 +17,7 @@ export default function Navbar() {
   const showNavbarRoutes = [
     "/dashboard",
     "/activity",
-    "/access",
+    "/qr",
     "/locations",
     "/profile",
   ];
