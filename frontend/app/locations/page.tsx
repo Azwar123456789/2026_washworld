@@ -182,7 +182,11 @@ export default function LocationsPage() {
         >
           {filteredLocations.map((location) => {
 
-            const meta = locationMeta[location.location_name];
+            const meta = Object.entries(locationMeta).find(([key]) =>
+  location.location_name.toLowerCase().includes(key.toLowerCase())
+)?.[1];
+
+console.log(location.location_name);
 
             const coords = meta
               ? {
