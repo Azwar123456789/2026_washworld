@@ -2,39 +2,32 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useEffect, useState } from "react";
 import { useLocations } from "../hooks/useLocations";
+import { locationMeta } from "../data/locationMeta";
 
-const realAddresses: Record<string, string> = {
-  Ishøj: "Vejleåvej 19, 2635 Ishøj",
-  Taastrup: "Roskildevej 376, 2630 Taastrup",
-  "Brøndby Strand": "Gammel Køge Landevej 690, 2660 Brøndby Strand",
-  Ballerup: "Skovvej 4, 2750 Ballerup",
-};
+function calculateDistance(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+) {
+  const R = 6371;
 
-const locationCoordinates: Record<
-  string,
-  { lat: number; lng: number }
-> = {
-  Ishøj: {
-    lat: 55.615676,
-    lng: 12.351193,
-  },
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
 
-  Taastrup: {
-    lat: 55.652414,
-    lng: 12.301533,
-  },
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
 
-  "Brøndby Strand": {
-    lat: 55.621725,
-    lng: 12.411472,
-  },
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-  Ballerup: {
-    lat: 55.731226,
-    lng: 12.363456,
-  },
-};
+  return R * c;
+}
 
 export default function LocationsPage() {
   const {
@@ -45,6 +38,25 @@ export default function LocationsPage() {
     error,
   } = useLocations();
 
+  const [userLocation, setUserLocation] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
+
+  useEffect(() => {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setUserLocation({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        });
+      },
+      (error) => {
+        console.log(error);
+      }
+    );
+  }, []);
+
   return (
     <main
       style={{
@@ -53,7 +65,6 @@ export default function LocationsPage() {
         paddingBottom: "100px",
       }}
     >
-
       <div
         style={{
           maxWidth: "420px",
@@ -61,7 +72,6 @@ export default function LocationsPage() {
           padding: "10px",
         }}
       >
-
         {/* Small title */}
         <h1
           style={{
@@ -70,7 +80,7 @@ export default function LocationsPage() {
             marginBottom: "8px",
           }}
         >
-          Find Vaskehal (Ultra-minimalistisk)
+          Find Vaskehal
         </h1>
 
         {/* Logo */}
@@ -83,14 +93,12 @@ export default function LocationsPage() {
             marginBottom: "16px",
           }}
         >
-
           <Image
             src="/washworld-logo.png"
             alt="Wash World"
             width={220}
             height={70}
           />
-
         </div>
 
         {/* Title */}
@@ -115,7 +123,6 @@ export default function LocationsPage() {
             marginBottom: "14px",
           }}
         >
-
           <input
             placeholder="Søg"
             value={search}
@@ -128,7 +135,6 @@ export default function LocationsPage() {
               background: "transparent",
             }}
           />
-
         </div>
 
         {/* Filter buttons */}
@@ -139,9 +145,7 @@ export default function LocationsPage() {
             marginBottom: "18px",
           }}
         >
-
           {["God kapacitet", "Åben nu", "Afstand"].map((filter) => (
-
             <button
               key={filter}
               style={{
@@ -155,9 +159,7 @@ export default function LocationsPage() {
             >
               {filter}
             </button>
-
           ))}
-
         </div>
 
         {/* Loading */}
@@ -178,22 +180,34 @@ export default function LocationsPage() {
             gap: "14px",
           }}
         >
-
           {filteredLocations.map((location) => {
 
-            const address =
-              realAddresses[location.location_name] ||
-              location.location_address;
+            const meta = locationMeta[location.location_name];
 
-            const coords =
-              locationCoordinates[location.location_name];
+            const coords = meta
+              ? {
+                  lat: meta.lat,
+                  lng: meta.lng,
+                }
+              : null;
+
+            const address = meta?.address || location.location_address;
 
             const mapsUrl = coords
               ? `https://www.google.com/maps/dir/?api=1&destination=${coords.lat},${coords.lng}`
-              : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+              : "#";
+
+            const distance =
+              coords && userLocation
+                ? calculateDistance(
+                    userLocation.lat,
+                    userLocation.lng,
+                    coords.lat,
+                    coords.lng
+                  ).toFixed(1)
+                : null;
 
             return (
-
               <Link
                 key={location.location_pk}
                 href={`/locations/${location.location_pk}`}
@@ -202,7 +216,6 @@ export default function LocationsPage() {
                   color: "inherit",
                 }}
               >
-
                 <div
                   style={{
                     background: "white",
@@ -211,7 +224,6 @@ export default function LocationsPage() {
                     border: "1px solid #e4e4e4",
                   }}
                 >
-
                   {/* Top */}
                   <div
                     style={{
@@ -220,7 +232,6 @@ export default function LocationsPage() {
                       marginBottom: "12px",
                     }}
                   >
-
                     <div
                       style={{
                         display: "flex",
@@ -228,7 +239,6 @@ export default function LocationsPage() {
                         alignItems: "center",
                       }}
                     >
-
                       <span
                         style={{
                           fontSize: "9px",
@@ -257,7 +267,6 @@ export default function LocationsPage() {
                       >
                         God kapacitet
                       </span>
-
                     </div>
 
                     <div
@@ -265,7 +274,6 @@ export default function LocationsPage() {
                         textAlign: "right",
                       }}
                     >
-
                       <div
                         style={{
                           fontSize: "9px",
@@ -282,11 +290,9 @@ export default function LocationsPage() {
                           fontSize: "14px",
                         }}
                       >
-                        2.4 km
+                        {distance ? `${distance} km` : "..."}
                       </div>
-
                     </div>
-
                   </div>
 
                   {/* Name */}
@@ -319,7 +325,6 @@ export default function LocationsPage() {
                       marginTop: "10px",
                     }}
                   >
-
                     <a
                       href={mapsUrl}
                       target="_blank"
@@ -333,19 +338,13 @@ export default function LocationsPage() {
                     >
                       →
                     </a>
-
                   </div>
-
                 </div>
-
               </Link>
             );
           })}
-
         </div>
-
       </div>
-
     </main>
   );
 }
