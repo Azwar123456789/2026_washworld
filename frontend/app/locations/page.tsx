@@ -14,6 +14,25 @@ function createSlug(value: string) {
     .replaceAll(" ", "-");
 }
 
+function getCapacity(index: number) {
+  const capacities = [
+    {
+      label: "God kapacitet",
+      color: "#67d27d",
+    },
+    {
+      label: "Medium kapacitet",
+      color: "#d8c93f",
+    },
+    {
+      label: "Dårlig kapacitet",
+      color: "#e04b4b",
+    },
+  ];
+
+  return capacities[index % 3];
+}
+
 function calculateDistance(
   lat1: number,
   lon1: number,
@@ -21,6 +40,7 @@ function calculateDistance(
   lon2: number
 ) {
   const R = 6371;
+
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
 
@@ -36,7 +56,10 @@ function calculateDistance(
   return R * c;
 }
 
-function getDistance(location: WashLocation, userLocation: { lat: number; lng: number } | null) {
+function getDistance(
+  location: WashLocation,
+  userLocation: { lat: number; lng: number } | null
+) {
   if (!userLocation || !location.location_lat || !location.location_lng) {
     return null;
   }
@@ -59,6 +82,7 @@ export default function LocationsPage() {
   } = useLocations();
 
   const [activeFilter, setActiveFilter] = useState("");
+
   const [userLocation, setUserLocation] = useState<{
     lat: number;
     lng: number;
@@ -85,6 +109,12 @@ export default function LocationsPage() {
   if (activeFilter === "Åben nu") {
     displayedLocations = displayedLocations.filter((location) =>
       location.location_opening_hours.includes("22:00")
+    );
+  }
+
+  if (activeFilter === "God kapacitet") {
+    displayedLocations = displayedLocations.filter(
+      (_, index) => getCapacity(index).label === "God kapacitet"
     );
   }
 
@@ -227,141 +257,143 @@ export default function LocationsPage() {
             gap: "14px",
           }}
         >
-          {displayedLocations.map((location) => {
+          {displayedLocations.map((location, index) => {
             const distance = getDistance(location, userLocation);
+
             const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
               location.location_address
             )}`;
 
+            const locationUrl = `/locations/${createSlug(
+              location.location_city
+            )}`;
+
+            const capacity = getCapacity(index);
+
             return (
-              <Link
+              <div
                 key={location.location_pk}
-                href={`/locations/${createSlug(location.location_city)}`}
                 style={{
-                  textDecoration: "none",
-                  color: "inherit",
+                  background: "white",
+                  borderRadius: "12px",
+                  padding: "14px",
+                  border: "1px solid #e4e4e4",
                 }}
               >
                 <div
                   style={{
-                    background: "white",
-                    borderRadius: "12px",
-                    padding: "14px",
-                    border: "1px solid #e4e4e4",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    marginBottom: "12px",
+                    gap: "10px",
                   }}
                 >
                   <div
                     style={{
                       display: "flex",
-                      justifyContent: "space-between",
-                      marginBottom: "12px",
-                      gap: "10px",
+                      gap: "8px",
+                      alignItems: "center",
+                      flexWrap: "wrap",
                     }}
                   >
-                    <div
+                    <span
                       style={{
-                        display: "flex",
-                        gap: "8px",
-                        alignItems: "center",
-                        flexWrap: "wrap",
+                        fontSize: "9px",
+                        color: "#888",
+                        textTransform: "uppercase",
                       }}
                     >
-                      <span
-                        style={{
-                          fontSize: "9px",
-                          color: "#888",
-                          textTransform: "uppercase",
-                        }}
-                      >
-                        Vaskehal
-                      </span>
+                      Vaskehal
+                    </span>
 
-                      <span
-                        style={{
-                          width: "6px",
-                          height: "6px",
-                          background: "#67d27d",
-                          borderRadius: "50%",
-                        }}
-                      />
-
-                      <span
-                        style={{
-                          fontSize: "9px",
-                          color: "#888",
-                          textTransform: "uppercase",
-                        }}
-                      >
-                        God kapacitet
-                      </span>
-                    </div>
-
-                    <div
+                    <span
                       style={{
-                        fontSize: "13px",
-                        fontWeight: 700,
-                        color: distance ? "#67d27d" : "#999",
-                        whiteSpace: "nowrap",
+                        width: "6px",
+                        height: "6px",
+                        background: capacity.color,
+                        borderRadius: "50%",
+                      }}
+                    />
+
+                    <span
+                      style={{
+                        fontSize: "9px",
+                        color: "#888",
+                        textTransform: "uppercase",
                       }}
                     >
-                      {distance ? `${distance.toFixed(1)} km` : "—"}
-                    </div>
+                      {capacity.label}
+                    </span>
                   </div>
-
-                  <h3
-                    style={{
-                      margin: "0 0 6px 0",
-                      fontSize: "28px",
-                      fontWeight: 700,
-                    }}
-                  >
-                    {location.location_name}
-                  </h3>
-
-                  <p
-                    style={{
-                      margin: 0,
-                      color: "#777",
-                      fontSize: "13px",
-                    }}
-                  >
-                    📍 {location.location_address}
-                  </p>
-
-                  <p
-                    style={{
-                      marginTop: "8px",
-                      color: "#444",
-                      fontSize: "13px",
-                      fontWeight: 600,
-                    }}
-                  >
-                    Åbningstid: {location.location_opening_hours}
-                  </p>
 
                   <div
                     style={{
-                      display: "flex",
-                      justifyContent: "flex-end",
-                      marginTop: "10px",
+                      fontSize: "13px",
+                      fontWeight: 700,
+                      color: distance ? "#67d27d" : "#999",
+                      whiteSpace: "nowrap",
                     }}
                   >
-                    <a
-                      href={mapsUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={(e) => e.stopPropagation()}
-                      style={{
-                        fontSize: "34px",
-                        textDecoration: "none",
-                        color: "#111",
-                      }}
-                    >
-                      →
-                    </a>
+                    {distance ? `${distance.toFixed(1)} km` : "—"}
                   </div>
                 </div>
-              </Link>
+
+                <h3
+                  style={{
+                    margin: "0 0 6px 0",
+                    fontSize: "28px",
+                    fontWeight: 700,
+                  }}
+                >
+                  {location.location_name}
+                </h3>
+
+                <a
+                  href={mapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    margin: 0,
+                    color: "#777",
+                    fontSize: "13px",
+                    textDecoration: "underline",
+                    display: "inline-block",
+                  }}
+                >
+                  📍 {location.location_address}
+                </a>
+
+                <p
+                  style={{
+                    marginTop: "8px",
+                    color: "#444",
+                    fontSize: "13px",
+                    fontWeight: 600,
+                  }}
+                >
+                  Åbningstid: {location.location_opening_hours}
+                </p>
+
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    marginTop: "10px",
+                  }}
+                >
+                  <Link
+                    href={locationUrl}
+                    style={{
+                      fontSize: "34px",
+                      textDecoration: "none",
+                      color: "#111",
+                      lineHeight: 1,
+                    }}
+                  >
+                    →
+                  </Link>
+                </div>
+              </div>
             );
           })}
         </div>
