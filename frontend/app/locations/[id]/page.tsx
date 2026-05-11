@@ -1,165 +1,151 @@
 "use client";
 
-import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useLocations } from "../../hooks/useLocations";
 
-const realAddresses: Record<string, string> = {
-  Ishøj: "Vejleåvej 19, 2635 Ishøj",
-  Taastrup: "Roskildevej 376, 2630 Taastrup",
-  "Brøndby Strand": "Gammel Køge Landevej 690, 2660 Brøndby Strand",
-};
-
-const locationCoordinates: Record<
-  string,
-  { lat: number; lng: number }
-> = {
-  Ishøj: {
-    lat: 55.615676,
-    lng: 12.351193,
-  },
-
-  Taastrup: {
-    lat: 55.652414,
-    lng: 12.301533,
-  },
-
-  "Brøndby Strand": {
-    lat: 55.621725,
-    lng: 12.411472,
-  },
-};
-
-export default function LocationDetailPage() {
+export default function LocationDetailsPage() {
   const params = useParams();
 
-  const { filteredLocations, isLoading, error } = useLocations();
+  const { filteredLocations, isLoading, error } =
+    useLocations();
 
   const location = filteredLocations.find(
-    (loc) => String(loc.location_pk) === String(params.id)
+    (loc) =>
+      loc.location_city.toLowerCase() ===
+      String(params.id).toLowerCase()
   );
 
   if (isLoading) {
-    return <main className="dashboard-page">Loading...</main>;
+    return (
+      <main className="page">
+        <p>Loading...</p>
+      </main>
+    );
   }
 
   if (error) {
     return (
-      <main className="dashboard-page">
-        <p className="login-error">{error}</p>
+      <main className="page">
+        <p>{error}</p>
       </main>
     );
   }
 
   if (!location) {
     return (
-      <main className="dashboard-page">
-        Location not found
+      <main className="page">
+        <p>Vaskehal ikke fundet</p>
       </main>
     );
   }
 
-  const address =
-    realAddresses[location.location_name] ||
-    location.location_address;
-
-  const coords =
-    locationCoordinates[location.location_name];
-
-  const mapsUrl = coords
-    ? `https://www.google.com/maps/dir/?api=1&destination=${coords.lat},${coords.lng}`
-    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+    location.location_address
+  )}`;
 
   return (
-    <main className="dashboard-page">
-
-      <div className="dashboard-shell">
-
-        {/* Hero */}
-        <section className="dashboard-hero">
-
-          <div className="dashboard-hero-top">
-
-            <Link
-              href="/locations"
-              style={{
-                color: "#69d27f",
-                textDecoration: "none",
-                fontWeight: "bold",
-              }}
-            >
-              ← Tilbage
-            </Link>
-
-          </div>
-
-          <h1 className="dashboard-greeting">
+    <main
+      style={{
+        minHeight: "100vh",
+        background: "#efefef",
+        padding: "16px",
+        paddingBottom: "100px",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: "420px",
+          margin: "0 auto",
+        }}
+      >
+        {/* Header */}
+        <div
+          style={{
+            background: "#000",
+            color: "white",
+            padding: "26px 20px",
+            borderRadius: "0 0 18px 18px",
+            marginBottom: "20px",
+          }}
+        >
+          <h1
+            style={{
+              margin: 0,
+              fontSize: "32px",
+              fontWeight: 800,
+            }}
+          >
             {location.location_name}
           </h1>
 
-          <p className="dashboard-subtitle">
-            {address}
-          </p>
-
-        </section>
-
-        {/* Image */}
-        <section className="locations-section">
-
-          <img
-            src="https://images.unsplash.com/photo-1607860108855-64acf2078ed9?q=80&w=1200&auto=format&fit=crop"
-            alt="Washhall"
-            className="location-image"
+          <p
             style={{
-              height: "220px",
-              marginBottom: "18px",
+              marginTop: "10px",
+              color: "#bbb",
+              fontSize: "14px",
             }}
-          />
+          >
+            {location.location_address}
+          </p>
+        </div>
 
-          <h2 className="section-title">
+        {/* Info card */}
+        <div
+          style={{
+            background: "white",
+            borderRadius: "16px",
+            padding: "18px",
+            marginBottom: "18px",
+          }}
+        >
+          <h2
+            style={{
+              marginTop: 0,
+              marginBottom: "14px",
+              fontSize: "18px",
+            }}
+          >
             Information
           </h2>
 
-          <div className="location-info">
+          <p>
+            <strong>By:</strong>{" "}
+            {location.location_city}
+          </p>
 
-            <p>
-              🕒 Åbningstid:
-              {" "}
-              {location.location_opening_hours}
-            </p>
+          <p>
+            <strong>Adresse:</strong>{" "}
+            {location.location_address}
+          </p>
 
-            <p>
-              🧼 Moderne vaskehal
-            </p>
+          <p>
+            <strong>Åbningstid:</strong>{" "}
+            {location.location_opening_hours}
+          </p>
+        </div>
 
-            <p>
-              🚗 Hurtig og effektiv vask
-            </p>
-
-            <p>
-              🌱 Miljøvenlige produkter
-            </p>
-
-            <p className="location-distance">
-              ● God kapacitet lige nu
-            </p>
-
-          </div>
-
-          <a
-            href={mapsUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <button className="show-more-button">
-              Rutevejledning
-            </button>
-          </a>
-
-        </section>
-
+        {/* Maps button */}
+        <a
+          href={mapsUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: "block",
+            width: "100%",
+            background: "#67d27d",
+            color: "white",
+            textAlign: "center",
+            padding: "16px",
+            borderRadius: "14px",
+            textDecoration: "none",
+            fontWeight: 700,
+            fontSize: "18px",
+            boxSizing: "border-box",
+          }}
+        >
+          Åbn i Google Maps
+        </a>
       </div>
-
     </main>
   );
 }

@@ -2,32 +2,8 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useLocations } from "../hooks/useLocations";
-import { locationMeta } from "../data/locationMeta";
-
-function calculateDistance(
-  lat1: number,
-  lon1: number,
-  lat2: number,
-  lon2: number
-) {
-  const R = 6371;
-
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLon = ((lon2 - lon1) * Math.PI) / 180;
-
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
-
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-  return R * c;
-}
 
 export default function LocationsPage() {
   const {
@@ -38,24 +14,15 @@ export default function LocationsPage() {
     error,
   } = useLocations();
 
-  const [userLocation, setUserLocation] = useState<{
-    lat: number;
-    lng: number;
-  } | null>(null);
+  const [activeFilter, setActiveFilter] = useState("");
 
-  useEffect(() => {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setUserLocation({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        });
-      },
-      (error) => {
-        console.log(error);
-      }
+  let displayedLocations = [...filteredLocations];
+
+  if (activeFilter === "Åben nu") {
+    displayedLocations = displayedLocations.filter((location) =>
+      location.location_opening_hours.includes("22:00")
     );
-  }, []);
+  }
 
   return (
     <main
@@ -124,7 +91,7 @@ export default function LocationsPage() {
           }}
         >
           <input
-            placeholder="Søg"
+            placeholder="Søg efter by"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             style={{
@@ -145,16 +112,30 @@ export default function LocationsPage() {
             marginBottom: "18px",
           }}
         >
-          {["God kapacitet", "Åben nu", "Afstand"].map((filter) => (
+          {["God kapacitet", "Åben nu"].map((filter) => (
             <button
               key={filter}
+              onClick={() =>
+                setActiveFilter(
+                  activeFilter === filter ? "" : filter
+                )
+              }
               style={{
                 flex: 1,
-                background: "white",
+                background:
+                  activeFilter === filter
+                    ? "#67d27d"
+                    : "white",
+                color:
+                  activeFilter === filter
+                    ? "white"
+                    : "#111",
                 border: "1px solid #d9d9d9",
                 borderRadius: "8px",
                 padding: "10px 8px",
                 fontSize: "11px",
+                fontWeight: 700,
+                cursor: "pointer",
               }}
             >
               {filter}
@@ -180,41 +161,16 @@ export default function LocationsPage() {
             gap: "14px",
           }}
         >
-          {filteredLocations.map((location) => {
+          {displayedLocations.map((location) => {
 
-            const meta = Object.entries(locationMeta).find(([key]) =>
-  location.location_name.toLowerCase().includes(key.toLowerCase())
-)?.[1];
-
-console.log(location.location_name);
-
-            const coords = meta
-              ? {
-                  lat: meta.lat,
-                  lng: meta.lng,
-                }
-              : null;
-
-            const address = meta?.address || location.location_address;
-
-            const mapsUrl = coords
-              ? `https://www.google.com/maps/dir/?api=1&destination=${coords.lat},${coords.lng}`
-              : "#";
-
-            const distance =
-              coords && userLocation
-                ? calculateDistance(
-                    userLocation.lat,
-                    userLocation.lng,
-                    coords.lat,
-                    coords.lng
-                  ).toFixed(1)
-                : null;
+            const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+              location.location_address
+            )}`;
 
             return (
               <Link
                 key={location.location_pk}
-                href={`/locations/${location.location_pk}`}
+                href={`/locations/${location.location_city.toLowerCase()}`}
                 style={{
                   textDecoration: "none",
                   color: "inherit",
@@ -272,31 +228,6 @@ console.log(location.location_name);
                         God kapacitet
                       </span>
                     </div>
-
-                    <div
-                      style={{
-                        textAlign: "right",
-                      }}
-                    >
-                      <div
-                        style={{
-                          fontSize: "9px",
-                          color: "#888",
-                          textTransform: "uppercase",
-                        }}
-                      >
-                        Afstand
-                      </div>
-
-                      <div
-                        style={{
-                          fontWeight: 700,
-                          fontSize: "14px",
-                        }}
-                      >
-                        {distance ? `${distance} km` : "..."}
-                      </div>
-                    </div>
                   </div>
 
                   {/* Name */}
@@ -318,7 +249,20 @@ console.log(location.location_name);
                       fontSize: "13px",
                     }}
                   >
-                    📍 {address}
+                    📍 {location.location_address}
+                  </p>
+
+                  {/* Opening hours */}
+                  <p
+                    style={{
+                      marginTop: "8px",
+                      color: "#444",
+                      fontSize: "13px",
+                      fontWeight: 600,
+                    }}
+                  >
+                    Åbningstid:{" "}
+                    {location.location_opening_hours}
                   </p>
 
                   {/* Arrow */}
