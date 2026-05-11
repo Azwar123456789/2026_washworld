@@ -1,5 +1,6 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
+from flask import request
 import uuid
 import time
 from datetime import datetime
@@ -208,47 +209,53 @@ def login():
 
 
 ##############################
-@app.put("/api/me")
+@app.route("/api/me", methods=["GET", "PUT"])
 @jwt_required()
-def update_me():
+def me():
     try:
         user_pk = get_jwt_identity()
-        data = x.get_data()
-
-        user_first_name = x.validate_user_first_name(data.get("user_first_name", ""))
-        user_email = x.validate_email(data.get("user_email", ""))
-        user_license_plate = x.validate_license_plate(data.get("user_license_plate", ""))
-
         db, cursor = x.db()
 
-        q = """
-            UPDATE users
-            SET 
-                user_first_name = %s,
-                user_email = %s,
-                user_license_plate = %s
-            WHERE user_pk = %s
-        """
+        if request.method == "GET":
+            cursor.execute("""
+                SELECT 
+                    user_pk,
+                    user_first_name,
+                    user_email,
+                    user_license_plate
+                FROM users
+                WHERE user_pk = %s
+            """, (user_pk,))
 
-        cursor.execute(q, (
-            user_first_name,
-            user_email,
-            user_license_plate,
-            user_pk
-        ))
+            user = cursor.fetchone()
 
-        db.commit()
+            if not user:
+                return jsonify({"error": "User not found"}), 404
 
-        return jsonify({
-            "message": "Profile updated"
-        }), 200
+            return jsonify({"user": user}), 200
+
+        if request.method == "PUT":
+            data = request.get_json()
+
+            cursor.execute("""
+                UPDATE users
+                SET 
+                    user_first_name = %s,
+                    user_email = %s,
+                    user_license_plate = %s
+                WHERE user_pk = %s
+            """, (
+                data.get("user_first_name"),
+                data.get("user_email"),
+                data.get("user_license_plate"),
+                user_pk
+            ))
+
+            db.commit()
+
+            return jsonify({"message": "Profile updated"}), 200
 
     except Exception as ex:
-        ic(ex)
-
-        if "Duplicate entry" in str(ex):
-            return jsonify({"error": "Email already exists"}), 409
-
         return jsonify({"error": str(ex)}), 500
 
     finally:
