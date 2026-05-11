@@ -411,7 +411,9 @@ def get_locations():
                 location_name,
                 location_city,
                 location_address,
-                location_opening_hours
+                location_opening_hours,
+                location_lat,
+                location_lng
             FROM wash_locations
             ORDER BY location_city
         """

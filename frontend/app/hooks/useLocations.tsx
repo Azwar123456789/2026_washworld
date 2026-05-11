@@ -11,6 +11,8 @@ export type WashLocation = {
   location_city: string;
   location_address: string;
   location_opening_hours: string;
+  location_lat?: number | string | null;
+  location_lng?: number | string | null;
 };
 
 export function useLocations() {
@@ -32,11 +34,15 @@ export function useLocations() {
 
   const locations = data || [];
 
-  const filteredLocations = locations.filter((location) =>
-    location.location_city.toLowerCase().includes(search.toLowerCase()) ||
-    location.location_name.toLowerCase().includes(search.toLowerCase()) ||
-    location.location_address.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredLocations = locations.filter((location) => {
+    const query = search.toLowerCase();
+
+    return (
+      location.location_city.toLowerCase().includes(query) ||
+      location.location_name.toLowerCase().includes(query) ||
+      location.location_address.toLowerCase().includes(query)
+    );
+  });
 
   return {
     locations,

@@ -2,8 +2,52 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
-import { useLocations } from "../hooks/useLocations";
+import { useEffect, useState } from "react";
+import { useLocations, WashLocation } from "../hooks/useLocations";
+
+function createSlug(value: string) {
+  return value
+    .toLowerCase()
+    .replaceAll("æ", "ae")
+    .replaceAll("ø", "oe")
+    .replaceAll("å", "aa")
+    .replaceAll(" ", "-");
+}
+
+function calculateDistance(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+) {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return R * c;
+}
+
+function getDistance(location: WashLocation, userLocation: { lat: number; lng: number } | null) {
+  if (!userLocation || !location.location_lat || !location.location_lng) {
+    return null;
+  }
+
+  return calculateDistance(
+    userLocation.lat,
+    userLocation.lng,
+    Number(location.location_lat),
+    Number(location.location_lng)
+  );
+}
 
 export default function LocationsPage() {
   const {
@@ -15,6 +59,26 @@ export default function LocationsPage() {
   } = useLocations();
 
   const [activeFilter, setActiveFilter] = useState("");
+  const [userLocation, setUserLocation] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setUserLocation({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        });
+      },
+      (error) => {
+        console.log("Kunne ikke hente lokation:", error);
+      }
+    );
+  }, []);
 
   let displayedLocations = [...filteredLocations];
 
@@ -22,6 +86,15 @@ export default function LocationsPage() {
     displayedLocations = displayedLocations.filter((location) =>
       location.location_opening_hours.includes("22:00")
     );
+  }
+
+  if (activeFilter === "Afstand" && userLocation) {
+    displayedLocations.sort((a, b) => {
+      const distanceA = getDistance(a, userLocation) ?? 999999;
+      const distanceB = getDistance(b, userLocation) ?? 999999;
+
+      return distanceA - distanceB;
+    });
   }
 
   return (
@@ -39,7 +112,6 @@ export default function LocationsPage() {
           padding: "10px",
         }}
       >
-        {/* Small title */}
         <h1
           style={{
             fontSize: "16px",
@@ -50,7 +122,6 @@ export default function LocationsPage() {
           Find Vaskehal
         </h1>
 
-        {/* Logo */}
         <div
           style={{
             background: "#000",
@@ -61,14 +132,13 @@ export default function LocationsPage() {
           }}
         >
           <Image
-            src="/washworld-logo.png"
+            src="/logo_hvid.webp"
             alt="Wash World"
             width={220}
             height={70}
           />
         </div>
 
-        {/* Title */}
         <h2
           style={{
             textAlign: "center",
@@ -80,7 +150,6 @@ export default function LocationsPage() {
           Find vaskehal
         </h2>
 
-        {/* Search */}
         <div
           style={{
             background: "white",
@@ -91,7 +160,7 @@ export default function LocationsPage() {
           }}
         >
           <input
-            placeholder="Søg efter by"
+            placeholder="Søg efter by eller adresse"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             style={{
@@ -104,7 +173,6 @@ export default function LocationsPage() {
           />
         </div>
 
-        {/* Filter buttons */}
         <div
           style={{
             display: "flex",
@@ -112,24 +180,16 @@ export default function LocationsPage() {
             marginBottom: "18px",
           }}
         >
-          {["God kapacitet", "Åben nu"].map((filter) => (
+          {["God kapacitet", "Åben nu", "Afstand"].map((filter) => (
             <button
               key={filter}
               onClick={() =>
-                setActiveFilter(
-                  activeFilter === filter ? "" : filter
-                )
+                setActiveFilter(activeFilter === filter ? "" : filter)
               }
               style={{
                 flex: 1,
-                background:
-                  activeFilter === filter
-                    ? "#67d27d"
-                    : "white",
-                color:
-                  activeFilter === filter
-                    ? "white"
-                    : "#111",
+                background: activeFilter === filter ? "#67d27d" : "white",
+                color: activeFilter === filter ? "white" : "#111",
                 border: "1px solid #d9d9d9",
                 borderRadius: "8px",
                 padding: "10px 8px",
@@ -143,17 +203,23 @@ export default function LocationsPage() {
           ))}
         </div>
 
-        {/* Loading */}
-        {isLoading && <p>Loading...</p>}
-
-        {/* Error */}
-        {error && (
-          <p style={{ color: "red" }}>
-            {error}
+        {activeFilter === "Afstand" && !userLocation && (
+          <p
+            style={{
+              fontSize: "12px",
+              color: "#777",
+              marginBottom: "14px",
+              textAlign: "center",
+            }}
+          >
+            Tillad lokation i browseren for at sortere efter afstand.
           </p>
         )}
 
-        {/* Cards */}
+        {isLoading && <p>Loading...</p>}
+
+        {error && <p style={{ color: "red" }}>{error}</p>}
+
         <div
           style={{
             display: "flex",
@@ -162,7 +228,7 @@ export default function LocationsPage() {
           }}
         >
           {displayedLocations.map((location) => {
-
+            const distance = getDistance(location, userLocation);
             const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
               location.location_address
             )}`;
@@ -170,7 +236,7 @@ export default function LocationsPage() {
             return (
               <Link
                 key={location.location_pk}
-                href={`/locations/${location.location_city.toLowerCase()}`}
+                href={`/locations/${createSlug(location.location_city)}`}
                 style={{
                   textDecoration: "none",
                   color: "inherit",
@@ -184,12 +250,12 @@ export default function LocationsPage() {
                     border: "1px solid #e4e4e4",
                   }}
                 >
-                  {/* Top */}
                   <div
                     style={{
                       display: "flex",
                       justifyContent: "space-between",
                       marginBottom: "12px",
+                      gap: "10px",
                     }}
                   >
                     <div
@@ -197,6 +263,7 @@ export default function LocationsPage() {
                         display: "flex",
                         gap: "8px",
                         alignItems: "center",
+                        flexWrap: "wrap",
                       }}
                     >
                       <span
@@ -228,9 +295,19 @@ export default function LocationsPage() {
                         God kapacitet
                       </span>
                     </div>
+
+                    <div
+                      style={{
+                        fontSize: "13px",
+                        fontWeight: 700,
+                        color: distance ? "#67d27d" : "#999",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {distance ? `${distance.toFixed(1)} km` : "—"}
+                    </div>
                   </div>
 
-                  {/* Name */}
                   <h3
                     style={{
                       margin: "0 0 6px 0",
@@ -241,7 +318,6 @@ export default function LocationsPage() {
                     {location.location_name}
                   </h3>
 
-                  {/* Address */}
                   <p
                     style={{
                       margin: 0,
@@ -252,7 +328,6 @@ export default function LocationsPage() {
                     📍 {location.location_address}
                   </p>
 
-                  {/* Opening hours */}
                   <p
                     style={{
                       marginTop: "8px",
@@ -261,11 +336,9 @@ export default function LocationsPage() {
                       fontWeight: 600,
                     }}
                   >
-                    Åbningstid:{" "}
-                    {location.location_opening_hours}
+                    Åbningstid: {location.location_opening_hours}
                   </p>
 
-                  {/* Arrow */}
                   <div
                     style={{
                       display: "flex",
