@@ -606,7 +606,7 @@ body {
   background: #e04141;
 }
 
-/* ===== BOTTOM NAVBAR ===== */
+/* ===== BOTTOM NAVBAR test ===== */
 
 .bottom-nav {
   position: fixed;
@@ -882,3 +882,4 @@ body {
     border-radius: 12px;
   }
 }
+
