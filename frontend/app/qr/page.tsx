@@ -30,7 +30,7 @@ export default function QRPage() {
           >
 
             <Image
-              src="/washworld-logo.png"
+              src="/logo_sort.webp"
               alt="Wash World"
               width={110}
               height={40}
@@ -42,7 +42,7 @@ export default function QRPage() {
           <h2
             style={{
               color: "#67d27d",
-              fontSize: "22px",
+              fontSize: "32px",
               fontWeight: 800,
               margin: "0 0 10px 0",
             }}
