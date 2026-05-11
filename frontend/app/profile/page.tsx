@@ -17,13 +17,12 @@ type User = {
 export default function ProfilePage() {
   const router = useRouter();
 
-  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [userFirstName, setUserFirstName] = useState("");
   const [userEmail, setUserEmail] = useState("");
   const [userLicensePlate, setUserLicensePlate] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     async function getUser() {
@@ -44,15 +43,16 @@ export default function ProfilePage() {
         const result = await response.json();
 
         if (!response.ok) {
-          throw new Error(result.error || "Could not load user");
+          throw new Error(result.error || "Kunne ikke hente bruger");
         }
 
-        setUser(result.user);
         setUserFirstName(result.user.user_first_name);
         setUserEmail(result.user.user_email);
         setUserLicensePlate(result.user.user_license_plate);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Something went wrong");
+        setError(err instanceof Error ? err.message : "Noget gik galt");
+      } finally {
+        setIsLoading(false);
       }
     }
 
@@ -61,7 +61,6 @@ export default function ProfilePage() {
 
   async function saveProfile() {
     try {
-      setIsSaving(true);
       setMessage("");
       setError("");
 
@@ -83,14 +82,12 @@ export default function ProfilePage() {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || "Could not update profile");
+        throw new Error(result.error || "Kunne ikke gemme ændringer");
       }
 
       setMessage("Ændringer gemt");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
-    } finally {
-      setIsSaving(false);
+      setError(err instanceof Error ? err.message : "Noget gik galt");
     }
   }
 
@@ -99,11 +96,22 @@ export default function ProfilePage() {
     router.push("/login");
   }
 
-  if (!user) {
+  if (isLoading) {
     return (
       <main className="dashboard-page">
         <div className="dashboard-shell">
           <p>Loading...</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (error && !userFirstName) {
+    return (
+      <main className="dashboard-page">
+        <div className="dashboard-shell">
+          <p style={{ color: "red" }}>{error}</p>
+          <button onClick={() => router.push("/login")}>Gå til login</button>
         </div>
       </main>
     );
@@ -139,220 +147,83 @@ export default function ProfilePage() {
           </div>
         </section>
 
-        <section
-          style={{
-            background: "white",
-            padding: "22px 18px",
-          }}
-        >
-          <div
-            style={{
+        <section style={{ background: "white", padding: "22px 18px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "28px" }}>
+            <div style={{
+              width: "42px",
+              height: "42px",
+              borderRadius: "50%",
+              background: "#67d27d",
+              color: "#000",
+              fontWeight: 900,
               display: "flex",
               alignItems: "center",
-              gap: "10px",
-              marginBottom: "28px",
-            }}
-          >
-            <div
-              style={{
-                width: "42px",
-                height: "42px",
-                borderRadius: "50%",
-                background: "#67d27d",
-                color: "#000",
-                fontWeight: 900,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
+              justifyContent: "center",
+            }}>
               {userFirstName.slice(0, 2).toUpperCase()}
             </div>
 
             <strong>{userFirstName}</strong>
           </div>
 
-          <h1
-            style={{
-              textAlign: "center",
-              fontSize: "26px",
-              marginBottom: "28px",
-            }}
-          >
+          <h1 style={{ textAlign: "center", fontSize: "26px", marginBottom: "28px" }}>
             Min Profil
           </h1>
 
-          <div
-            style={{
-              border: "1px solid #e5e5e5",
-              borderRadius: "10px",
-              padding: "22px",
-              textAlign: "center",
-              marginBottom: "30px",
-            }}
-          >
+          <div style={{
+            border: "1px solid #e5e5e5",
+            borderRadius: "10px",
+            padding: "22px",
+            textAlign: "center",
+            marginBottom: "30px",
+          }}>
             <h3 style={{ margin: "0 0 8px" }}>Guld pakke</h3>
 
-            <p
-              style={{
-                fontSize: "34px",
-                fontWeight: 900,
-                margin: 0,
-              }}
-            >
-              299
-              <span style={{ fontSize: "14px", fontWeight: 400 }}>
-                {" "}
-                kr. / md.
-              </span>
+            <p style={{ fontSize: "34px", fontWeight: 900, margin: 0 }}>
+              299 <span style={{ fontSize: "14px", fontWeight: 400 }}>kr. / md.</span>
             </p>
 
-            <p
-              style={{
-                color: "#67d27d",
-                fontSize: "12px",
-                fontWeight: 800,
-                marginTop: "4px",
-              }}
-            >
+            <p style={{ color: "#67d27d", fontSize: "12px", fontWeight: 800 }}>
               ● AKTIV
             </p>
 
-            <p
-              style={{
-                color: "#999",
-                fontSize: "12px",
-                marginBottom: "18px",
-              }}
-            >
-              Næste fornyelse: 01. næste måned
-            </p>
-
-            <button
-              style={{
-                background: "#67d27d",
-                color: "white",
-                border: "none",
-                borderRadius: "8px",
-                padding: "13px 18px",
-                fontWeight: 800,
-              }}
-            >
-              Administrer abonnement
-            </button>
-          </div>
-
-          <h2
-            style={{
-              textAlign: "center",
-              fontSize: "16px",
-              marginBottom: "22px",
-            }}
-          >
-            Personlige oplysninger
-          </h2>
-
-          <div style={{ marginBottom: "14px" }}>
-            <label style={labelStyle}>NAVN</label>
-            <input
-              value={userFirstName}
-              onChange={(e) => setUserFirstName(e.target.value)}
-              style={inputStyle}
-            />
-          </div>
-
-          <div style={{ marginBottom: "14px" }}>
-            <label style={labelStyle}>EMAIL</label>
-            <input
-              value={userEmail}
-              onChange={(e) => setUserEmail(e.target.value)}
-              style={inputStyle}
-            />
-          </div>
-
-          <div style={{ marginBottom: "14px" }}>
-            <label style={labelStyle}>TELEFON</label>
-            <input
-              value="+45 12 34 56 78"
-              disabled
-              style={{
-                ...inputStyle,
-                color: "#999",
-                background: "#f5f5f5",
-              }}
-            />
-          </div>
-
-          <div style={{ marginBottom: "18px" }}>
-            <label style={labelStyle}>NUMMERPLADE</label>
-            <input
-              value={userLicensePlate}
-              onChange={(e) => setUserLicensePlate(e.target.value.toUpperCase())}
-              style={inputStyle}
-            />
-          </div>
-
-          {message && (
-            <p style={{ color: "#67d27d", textAlign: "center" }}>
-              {message}
-            </p>
-          )}
-
-          {error && (
-            <p style={{ color: "red", textAlign: "center" }}>
-              {error}
-            </p>
-          )}
-
-          <button
-            onClick={saveProfile}
-            disabled={isSaving}
-            style={{
-              width: "100%",
+            <button style={{
               background: "#67d27d",
               color: "white",
               border: "none",
               borderRadius: "8px",
-              padding: "15px",
-              fontWeight: 900,
-              marginBottom: "32px",
-            }}
-          >
-            {isSaving ? "Gemmer..." : "Gem ændringer"}
-          </button>
-
-          <h2
-            style={{
-              textAlign: "center",
-              fontSize: "16px",
-              marginBottom: "18px",
-            }}
-          >
-            Betaling
-          </h2>
-
-          <div style={paymentCardStyle}>
-            <span>💳 **** 4242</span>
-            <span style={tagStyle}>STANDARD</span>
+              padding: "13px 18px",
+              fontWeight: 800,
+            }}>
+              Administrer abonnement
+            </button>
           </div>
 
-          <div style={paymentRowStyle}>↔ Skift betalingsmetode ›</div>
-          <div style={paymentRowStyle}>↺ Betalingshistorik ›</div>
+          <h2 style={{ textAlign: "center", fontSize: "16px", marginBottom: "22px" }}>
+            Personlige oplysninger
+          </h2>
 
-          <button
-            onClick={logout}
-            style={{
-              width: "100%",
-              background: "#000",
-              color: "white",
-              border: "none",
-              borderRadius: "8px",
-              padding: "16px",
-              fontWeight: 900,
-              fontSize: "17px",
-              marginTop: "24px",
-            }}
-          >
+          <label style={labelStyle}>NAVN</label>
+          <input value={userFirstName} onChange={(e) => setUserFirstName(e.target.value)} style={inputStyle} />
+
+          <label style={labelStyle}>EMAIL</label>
+          <input value={userEmail} onChange={(e) => setUserEmail(e.target.value)} style={inputStyle} />
+
+          <label style={labelStyle}>NUMMERPLADE</label>
+          <input
+            value={userLicensePlate}
+            onChange={(e) => setUserLicensePlate(e.target.value.toUpperCase())}
+            style={inputStyle}
+          />
+
+          {message && <p style={{ color: "#67d27d", textAlign: "center" }}>{message}</p>}
+          {error && <p style={{ color: "red", textAlign: "center" }}>{error}</p>}
+
+          <button onClick={saveProfile} style={greenButtonStyle}>
+            Gem ændringer
+          </button>
+
+          <button onClick={logout} style={logoutButtonStyle}>
             Log ud
           </button>
         </section>
@@ -366,7 +237,7 @@ const labelStyle = {
   fontSize: "10px",
   color: "#999",
   fontWeight: 900,
-  marginBottom: "6px",
+  margin: "14px 0 6px",
 } as const;
 
 const inputStyle = {
@@ -378,30 +249,25 @@ const inputStyle = {
   fontSize: "14px",
 } as const;
 
-const paymentCardStyle = {
-  border: "1px solid #ddd",
+const greenButtonStyle = {
+  width: "100%",
+  background: "#67d27d",
+  color: "white",
+  border: "none",
   borderRadius: "8px",
-  padding: "14px",
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  marginBottom: "10px",
-} as const;
-
-const paymentRowStyle = {
-  border: "1px solid #eee",
-  borderRadius: "8px",
-  padding: "14px",
-  marginBottom: "10px",
-  color: "#555",
-  fontSize: "14px",
-} as const;
-
-const tagStyle = {
-  background: "#eee",
-  color: "#777",
-  fontSize: "10px",
-  padding: "4px 7px",
-  borderRadius: "4px",
+  padding: "15px",
   fontWeight: 900,
+  marginTop: "20px",
+} as const;
+
+const logoutButtonStyle = {
+  width: "100%",
+  background: "#000",
+  color: "white",
+  border: "none",
+  borderRadius: "8px",
+  padding: "16px",
+  fontWeight: 900,
+  fontSize: "17px",
+  marginTop: "24px",
 } as const;
