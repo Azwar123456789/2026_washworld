@@ -11,14 +11,13 @@ export default function ActivityPage() {
         <section className="dashboard-hero">
           <div className="dashboard-hero-top">
             <img
-              src="/images/washworld-logo.png"
+              src="logo_hvid.webp"
               alt="Wash World"
               className="dashboard-logo"
             />
           </div>
 
-          <h2 className="dashboard-greeting">Hej, Jonas</h2>
-          <p className="dashboard-subtitle">Klar til din næste vask?</p>
+
         </section>
 
         <ActivityFeed />
