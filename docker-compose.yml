@@ -43,7 +43,7 @@ services:
       MYSQL_DATABASE: 2026_1_washworld
     volumes:
       - mariadb_data:/var/lib/mysql
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./database/2026_1_washworld-2.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "3306:3306"
 

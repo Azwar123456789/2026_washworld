@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 const navItems = [
   { href: "/dashboard", label: "HJEM", icon: "⌂" },
   { href: "/activity", label: "AKTIVITET", icon: "◉" },
-  { href: "/access", label: "ADGANG", icon: "▣" },
+  { href: "/qr", label: "ADGANG", icon: "▣" },
   { href: "/locations", label: "VASKEHAL", icon: "⌖" },
   { href: "/profile", label: "PROFIL", icon: "♙" },
 ];
@@ -17,7 +17,7 @@ export default function Navbar() {
   const showNavbarRoutes = [
     "/dashboard",
     "/activity",
-    "/access",
+    "/qr",
     "/locations",
     "/profile",
   ];

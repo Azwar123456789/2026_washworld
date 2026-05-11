@@ -1,5 +1,7 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+
 const locations = [
   {
     name: "Viby",
@@ -28,6 +30,8 @@ const queueData = [
 ];
 
 export default function DashboardPage() {
+  const router = useRouter();
+
   return (
     <main className="dashboard-page">
       <div className="dashboard-shell">
@@ -54,7 +58,13 @@ export default function DashboardPage() {
           <div className="qr-text-box">
             <h3>Start vask</h3>
             <p>Scan QR-koden på maskinen for at starte vask</p>
-            <button className="qr-button">Vis QR-kode</button>
+
+            <button
+              className="qr-button"
+              onClick={() => router.push("/qr")}
+            >
+              Vis QR-kode
+            </button>
           </div>
         </section>
 
