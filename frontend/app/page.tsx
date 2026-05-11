@@ -17,7 +17,7 @@ export default function SplashPage() {
   return (
     <main className="splash-page">
       <img
-        src="/images/washworld-logo.png"
+        src="/logo_sort.webp"
         alt="Wash World"
         className="splash-logo"
       />

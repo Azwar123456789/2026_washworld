@@ -1,14 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 
 const navItems = [
-  { href: "/dashboard", label: "HJEM", icon: "⌂" },
-  { href: "/activity", label: "AKTIVITET", icon: "◉" },
-  { href: "/qr", label: "ADGANG", icon: "▣" },
-  { href: "/locations", label: "VASKEHAL", icon: "⌖" },
-  { href: "/profile", label: "PROFIL", icon: "♙" },
+  { href: "/dashboard", label: "HJEM", icon: "/home.svg" },
+  { href: "/activity", label: "AKTIVITET", icon: "/activity.svg" },
+  { href: "/qr", label: "ADGANG", icon: "/qr.svg" },
+  { href: "/locations", label: "VASKEHAL", icon: "/vaskehal.svg" },
+  { href: "/profile", label: "PROFIL", icon: "/profile.svg" },
 ];
 
 export default function Navbar() {
@@ -23,7 +24,7 @@ export default function Navbar() {
   ];
 
   const shouldShowNavbar = showNavbarRoutes.some(
-    (route) => pathname === route || pathname.startsWith(`${route}/`),
+    (route) => pathname === route || pathname.startsWith(`${route}/`)
   );
 
   if (!shouldShowNavbar) {
@@ -35,7 +36,8 @@ export default function Navbar() {
       {navItems.map((item) => {
         const isActive =
           pathname === item.href ||
-          (item.href === "/activity" && pathname.startsWith("/activity/"));
+          (item.href === "/activity" &&
+            pathname.startsWith("/activity/"));
 
         return (
           <Link
@@ -43,8 +45,18 @@ export default function Navbar() {
             href={item.href}
             className={`bottom-nav-link ${isActive ? "active" : ""}`}
           >
-            <span className="bottom-nav-icon">{item.icon}</span>
-            <span className="bottom-nav-label">{item.label}</span>
+            <span className="bottom-nav-icon">
+              <Image
+                src={item.icon}
+                alt={item.label}
+                width={24}
+                height={24}
+              />
+            </span>
+
+            <span className="bottom-nav-label">
+              {item.label}
+            </span>
           </Link>
         );
       })}

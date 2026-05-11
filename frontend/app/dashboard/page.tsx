@@ -7,19 +7,19 @@ const locations = [
     name: "Viby",
     address: "Gunnar Clausens Vej 2A, 8260 Viby",
     distance: "14,6 km",
-    image: "/images/login-washworld.jpg",
+    image: "/viby.webp",
   },
   {
     name: "Højbjerg",
     address: "Bodøstrupvej 20E, 8270 Højbjerg",
     distance: "15,8 km",
-    image: "/images/login-washworld.jpg",
+    image: "/højbjerg.webp",
   },
   {
     name: "Tilst",
     address: "Blomstervej 2T, 8381 Tilst",
     distance: "21,7 km",
-    image: "/images/login-washworld.jpg",
+    image: "/tilst.webp",
   },
 ];
 
@@ -35,12 +35,11 @@ export default function DashboardPage() {
   return (
     <main className="dashboard-page">
       <div className="dashboard-shell">
-        <h1 className="dashboard-top-title">Hjem</h1>
 
         <section className="dashboard-hero">
           <div className="dashboard-hero-top">
             <img
-              src="/images/washworld-logo.png"
+              src="/logo_sort.webp"
               alt="Wash World"
               className="dashboard-logo"
             />
