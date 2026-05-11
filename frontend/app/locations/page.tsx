@@ -2,8 +2,31 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocations } from "../hooks/useLocations";
+
+function calculateDistance(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+) {
+  const R = 6371;
+
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return R * c;
+}
 
 export default function LocationsPage() {
   const {
@@ -16,7 +39,46 @@ export default function LocationsPage() {
 
   const [activeFilter, setActiveFilter] = useState("");
 
+  const [userLocation, setUserLocation] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
+
+  useEffect(() => {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setUserLocation({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        });
+      },
+      (error) => {
+        console.log(error);
+      }
+    );
+  }, []);
+
   let displayedLocations = [...filteredLocations];
+
+  if (activeFilter === "Afstand" && userLocation) {
+    displayedLocations.sort((a, b) => {
+      const aDistance = calculateDistance(
+        userLocation.lat,
+        userLocation.lng,
+        Number(a.location_lat),
+        Number(a.location_lng)
+      );
+
+      const bDistance = calculateDistance(
+        userLocation.lat,
+        userLocation.lng,
+        Number(b.location_lat),
+        Number(b.location_lng)
+      );
+
+      return aDistance - bDistance;
+    });
+  }
 
   if (activeFilter === "Åben nu") {
     displayedLocations = displayedLocations.filter((location) =>
@@ -112,35 +174,37 @@ export default function LocationsPage() {
             marginBottom: "18px",
           }}
         >
-          {["God kapacitet", "Åben nu"].map((filter) => (
-            <button
-              key={filter}
-              onClick={() =>
-                setActiveFilter(
-                  activeFilter === filter ? "" : filter
-                )
-              }
-              style={{
-                flex: 1,
-                background:
-                  activeFilter === filter
-                    ? "#67d27d"
-                    : "white",
-                color:
-                  activeFilter === filter
-                    ? "white"
-                    : "#111",
-                border: "1px solid #d9d9d9",
-                borderRadius: "8px",
-                padding: "10px 8px",
-                fontSize: "11px",
-                fontWeight: 700,
-                cursor: "pointer",
-              }}
-            >
-              {filter}
-            </button>
-          ))}
+          {["God kapacitet", "Åben nu", "Afstand"].map(
+            (filter) => (
+              <button
+                key={filter}
+                onClick={() =>
+                  setActiveFilter(
+                    activeFilter === filter ? "" : filter
+                  )
+                }
+                style={{
+                  flex: 1,
+                  background:
+                    activeFilter === filter
+                      ? "#67d27d"
+                      : "white",
+                  color:
+                    activeFilter === filter
+                      ? "white"
+                      : "#111",
+                  border: "1px solid #d9d9d9",
+                  borderRadius: "8px",
+                  padding: "10px 8px",
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                {filter}
+              </button>
+            )
+          )}
         </div>
 
         {/* Loading */}
@@ -162,10 +226,21 @@ export default function LocationsPage() {
           }}
         >
           {displayedLocations.map((location) => {
-
             const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
               location.location_address
             )}`;
+
+            const distance =
+              userLocation &&
+              location.location_lat &&
+              location.location_lng
+                ? calculateDistance(
+                    userLocation.lat,
+                    userLocation.lng,
+                    Number(location.location_lat),
+                    Number(location.location_lng)
+                  ).toFixed(1)
+                : null;
 
             return (
               <Link
@@ -228,6 +303,18 @@ export default function LocationsPage() {
                         God kapacitet
                       </span>
                     </div>
+
+                    {distance && (
+                      <div
+                        style={{
+                          fontSize: "13px",
+                          fontWeight: 700,
+                          color: "#67d27d",
+                        }}
+                      >
+                        {distance} km
+                      </div>
+                    )}
                   </div>
 
                   {/* Name */}
