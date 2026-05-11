@@ -4,11 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const navItems = [
-  { href: "/dashboard", label: "HJEM", icon: "/home.svg" },
-  { href: "/activity", label: "AKTIVITET", icon: "/activity.svg" },
-  { href: "/access", label: "ADGANG", icon: "/scan.svg" },
-  { href: "/locations", label: "VASKEHAL", icon: "/vaskehal.svg" },
-  { href: "/profile", label: "PROFIL", icon: "/profile.svg" },
+  { href: "/dashboard", label: "HJEM", icon: "⌂" },
+  { href: "/activity", label: "AKTIVITET", icon: "◉" },
+  { href: "/access", label: "ADGANG", icon: "▣" },
+  { href: "/locations", label: "VASKEHAL", icon: "⌖" },
+  { href: "/profile", label: "PROFIL", icon: "♙" },
 ];
 
 export default function Navbar() {
@@ -37,11 +37,7 @@ export default function Navbar() {
             href={item.href}
             className={`bottom-nav-link ${isActive ? "active" : ""}`}
           >
-            <img
-              src={item.icon}
-              alt={item.label}
-              className="bottom-nav-icon"
-            />
+            <span className="bottom-nav-icon">{item.icon}</span>
             <span className="bottom-nav-label">{item.label}</span>
           </Link>
         );

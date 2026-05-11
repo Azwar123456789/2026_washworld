@@ -42,7 +42,7 @@ export default function LoginFormPage() {
             </button>
 
             <img
-              src="/logo_sort.webp"
+              src="/images/washworld-logo.png"
               alt="Wash World"
               className="auth-logo"
             />
