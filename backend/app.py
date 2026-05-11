@@ -208,35 +208,47 @@ def login():
 
 
 ##############################
-@app.get("/api/me")
+@app.put("/api/me")
 @jwt_required()
-def me():
+def update_me():
     try:
         user_pk = get_jwt_identity()
+        data = x.get_data()
+
+        user_first_name = x.validate_user_first_name(data.get("user_first_name", ""))
+        user_email = x.validate_email(data.get("user_email", ""))
+        user_license_plate = x.validate_license_plate(data.get("user_license_plate", ""))
 
         db, cursor = x.db()
 
         q = """
-            SELECT 
-                user_pk,
-                user_first_name,
-                user_email,
-                user_license_plate,
-                user_verified_at
-            FROM users
+            UPDATE users
+            SET 
+                user_first_name = %s,
+                user_email = %s,
+                user_license_plate = %s
             WHERE user_pk = %s
         """
 
-        cursor.execute(q, (user_pk,))
-        user = cursor.fetchone()
+        cursor.execute(q, (
+            user_first_name,
+            user_email,
+            user_license_plate,
+            user_pk
+        ))
 
-        if not user:
-            return jsonify({"error": "User not found"}), 404
+        db.commit()
 
-        return jsonify({"user": user}), 200
+        return jsonify({
+            "message": "Profile updated"
+        }), 200
 
     except Exception as ex:
         ic(ex)
+
+        if "Duplicate entry" in str(ex):
+            return jsonify({"error": "Email already exists"}), 409
+
         return jsonify({"error": str(ex)}), 500
 
     finally:
@@ -244,7 +256,6 @@ def me():
             cursor.close()
         if "db" in locals():
             db.close()
-
 
 ##############################
 @app.get("/api/verify/<key>")
