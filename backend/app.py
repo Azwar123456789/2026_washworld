@@ -287,62 +287,47 @@ def verify_account(key):
 
 
 ##############################
+##############################
 @app.post("/api/forgot-password")
 def forgot_password():
     try:
-        email = x.validate_email()
+        email = x.validate_email()  # valider email fra request
 
         db, cursor = x.db()
 
-        q = """
-            SELECT user_pk, user_first_name
-            FROM users
-            WHERE user_email = %s
-        """
-
+        # Find user
+        q = "SELECT user_pk, user_first_name FROM users WHERE user_email=%s"
         cursor.execute(q, (email,))
         user = cursor.fetchone()
 
+        # Vi sender success uanset om email findes for sikkerhed
         if not user:
-            return jsonify({"error": "Email not found"}), 404
+            return jsonify({"message": "Check your email"}), 200
 
+        # Generer reset key
         reset_key = uuid.uuid4().hex + uuid.uuid4().hex
+
+        # Gem i password_reset_tokens og users
         reset_pk = uuid.uuid4().hex
         created_at = int(time.time())
 
-        q_insert = """
-            INSERT INTO password_reset_tokens (
-                reset_pk,
-                user_fk,
-                reset_key,
-                used_at,
-                created_at
-            )
+        cursor.execute("""
+            INSERT INTO password_reset_tokens (reset_pk, user_fk, reset_key, used_at, created_at)
             VALUES (%s, %s, %s, %s, %s)
-        """
+        """, (reset_pk, user["user_pk"], reset_key, 0, created_at))
 
-        cursor.execute(q_insert, (
-            reset_pk,
-            user["user_pk"],
-            reset_key,
-            0,
-            created_at
-        ))
+        cursor.execute("""
+            UPDATE users SET user_reset_password_key = %s WHERE user_pk = %s
+        """, (reset_key, user["user_pk"]))
 
-        q_update = """
-            UPDATE users
-            SET user_reset_password_key = %s
-            WHERE user_pk = %s
-        """
-
-        cursor.execute(q_update, (reset_key, user["user_pk"]))
         db.commit()
 
+        # Email HTML
         html = f"""
             <h1>Reset your Wash World password</h1>
-            <p>Hi {user["user_first_name"]}</p>
+            <p>Hi {user['user_first_name']}</p>
             <p>Click here to reset your password:</p>
-            <a href="http://localhost:3000/reset-password/{reset_key}">
+            <a href="http://localhost:3000/login/reset-password/{reset_key}">
                 Reset password
             </a>
         """
@@ -353,24 +338,19 @@ def forgot_password():
 
     except Exception as ex:
         ic(ex)
-
-        if "company_exception email" in str(ex):
-            return jsonify({"error": "Invalid email"}), 400
-
+        # Specific error handling kan tilføjes her, hvis ønsket
         return jsonify({"error": str(ex)}), 500
 
     finally:
-        if "cursor" in locals():
-            cursor.close()
-        if "db" in locals():
-            db.close()
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close()
 
 
 ##############################
 @app.post("/api/reset-password")
 def reset_password():
     try:
-        data = x.get_data()
+        data = x.get_data()  # får JSON eller form data
 
         reset_key = x.validate_uuid4_paranoia(data.get("reset_key", ""))
         password = x.validate_user_password(data.get("password", ""))
@@ -383,34 +363,27 @@ def reset_password():
 
         db, cursor = x.db()
 
-        q = """
-            SELECT user_fk
-            FROM password_reset_tokens
-            WHERE reset_key = %s
-            AND used_at = 0
-        """
-
-        cursor.execute(q, (reset_key,))
+        # Tjek reset key
+        cursor.execute("""
+            SELECT user_fk FROM password_reset_tokens
+            WHERE reset_key=%s AND used_at=0
+        """, (reset_key,))
         row = cursor.fetchone()
 
         if not row:
             return jsonify({"error": "Invalid or used reset key"}), 400
 
-        q_update_user = """
-            UPDATE users
-            SET user_password_hash = %s
-            WHERE user_pk = %s
-        """
+        # Opdater user password
+        cursor.execute("""
+            UPDATE users SET user_password_hash=%s
+            WHERE user_pk=%s
+        """, (password_hash, row["user_fk"]))
 
-        cursor.execute(q_update_user, (password_hash, row["user_fk"]))
-
-        q_update_token = """
-            UPDATE password_reset_tokens
-            SET used_at = %s
-            WHERE reset_key = %s
-        """
-
-        cursor.execute(q_update_token, (int(time.time()), reset_key))
+        # Marker token som brugt
+        cursor.execute("""
+            UPDATE password_reset_tokens SET used_at=%s
+            WHERE reset_key=%s
+        """, (int(time.time()), reset_key))
 
         db.commit()
 
@@ -418,20 +391,12 @@ def reset_password():
 
     except Exception as ex:
         ic(ex)
-
-        if "company_exception paranoia" in str(ex):
-            return jsonify({"error": "Invalid reset key"}), 400
-
-        if "company_exception user_password" in str(ex):
-            return jsonify({"error": f"Password must be {x.USER_PASSWORD_MIN} to {x.USER_PASSWORD_MAX} characters"}), 400
-
+        # Specific error handling kan tilføjes her, hvis ønsket
         return jsonify({"error": str(ex)}), 500
 
     finally:
-        if "cursor" in locals():
-            cursor.close()
-        if "db" in locals():
-            db.close()
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close()
 
 
 ##############################

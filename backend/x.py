@@ -181,26 +181,32 @@ def send_email(receiver_email, subject, html):
         # Create an app password and paste it below
 
         sender_email = "campuskoreskolee@gmail.com"
-        password = "PASTE_YOUR_NEW_APP_PASSWORD_HERE"
+        password = "yqmx yoel lvoy kglm"  # If 2FA is on, use an App Password instead
 
+        # Receiver email address
+        receiver_email = "campuskoreskolee@gmail.com"
+        
+        # Create the email message
         message = MIMEMultipart()
-        message["From"] = "Wash World"
+        message["From"] = "Washworld"
         message["To"] = receiver_email
-        message["Subject"] = subject
+        message["Subject"] = "Please verify your account"
 
+        # Body of the email
+        # body = f"""<h1>Hi</h1><h2>Hi again</h2>"""
         message.attach(MIMEText(html, "html"))
 
+        # Connect to Gmail's SMTP server and send the email
         with smtplib.SMTP("smtp.gmail.com", 587) as server:
-            server.starttls()
+            server.starttls()  # Upgrade the connection to secure
             server.login(sender_email, password)
             server.sendmail(sender_email, receiver_email, message.as_string())
-
+            
         ic("Email sent successfully!")
+
         return "email sent"
-
+       
     except Exception as ex:
-        ic(ex)
-        return "cannot send email"
-
+        return "cannot send email", 500
     finally:
         pass

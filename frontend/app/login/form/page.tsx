@@ -42,7 +42,7 @@ export default function LoginFormPage() {
             </button>
 
             <img
-              src="/images/washworld-logo.png"
+              src="/logo_sort.webp"
               alt="Wash World"
               className="auth-logo"
             />
@@ -81,7 +81,7 @@ export default function LoginFormPage() {
               <button
                 type="button"
                 className="auth-forgot-link"
-                onClick={() => router.push("/forgot-password")}
+                onClick={() => router.push("/login/forgot-password")}
               >
                 Glemt adgangskode?
               </button>

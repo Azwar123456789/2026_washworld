@@ -23,15 +23,17 @@ services:
     container_name: washworld_frontend
     ports:
       - "3000:3000"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:5001
       CHOKIDAR_USEPOLLING: "true"
       WATCHPACK_POLLING: "true"
     depends_on:
       - backend
+    develop:
+      watch:
+        - path: ./frontend
+          action: sync
+          target: /app
 
   mariadb:
     image: mariadb:10.6.20
