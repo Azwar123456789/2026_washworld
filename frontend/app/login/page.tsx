@@ -8,13 +8,14 @@ export default function LoginWelcomePage() {
   return (
     <main className="login-page">
       <section className="login-card">
-        <h1 className="login-title">Login</h1>
 
-        <img
-          src="/images/login-washworld.jpg"
-          alt="Wash World"
-          className="login-image"
-        />
+        <div className="login-image-wrapper">
+          <img
+            src="/loginhero.png"
+            alt="Wash World"
+            className="login-image"
+          />
+        </div>
 
         <div className="login-bottom">
           <p className="login-text">
@@ -23,7 +24,7 @@ export default function LoginWelcomePage() {
             Scan QR og undgå ventetid
           </p>
 
-          <button
+          <button 
             type="button"
             className="login-primary-button"
             onClick={() => router.push("/login/form")}
