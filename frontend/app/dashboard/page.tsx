@@ -51,7 +51,7 @@ export default function DashboardPage() {
 
         <section className="qr-section">
           <div className="qr-image-box">
-            <img src="/images/qr-code.png" alt="QR kode" className="qr-image" />
+            <img src="/qr-placeholder.png" alt="QR kode" className="qr-image" />
           </div>
 
           <div className="qr-text-box">
