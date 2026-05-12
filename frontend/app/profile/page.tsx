@@ -139,7 +139,7 @@ export default function ProfilePage() {
             </button>
 
             <Image
-              src="/logo_hvid.webp"
+              src="/logo_sort.webp"
               alt="Wash World"
               width={180}
               height={60}
