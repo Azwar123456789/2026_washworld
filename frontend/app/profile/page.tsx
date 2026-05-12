@@ -12,6 +12,7 @@ type User = {
   user_first_name: string;
   user_email: string;
   user_license_plate: string;
+  user_phone?: string | null;
 };
 
 export default function ProfilePage() {
@@ -20,6 +21,7 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [userFirstName, setUserFirstName] = useState("");
   const [userEmail, setUserEmail] = useState("");
+  const [userPhone, setUserPhone] = useState("");
   const [userLicensePlate, setUserLicensePlate] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -46,9 +48,12 @@ export default function ProfilePage() {
           throw new Error(result.error || "Kunne ikke hente bruger");
         }
 
-        setUserFirstName(result.user.user_first_name);
-        setUserEmail(result.user.user_email);
-        setUserLicensePlate(result.user.user_license_plate);
+        const user: User = result.user;
+
+        setUserFirstName(user.user_first_name);
+        setUserEmail(user.user_email);
+        setUserPhone(user.user_phone || "");
+        setUserLicensePlate(user.user_license_plate);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Noget gik galt");
       } finally {
@@ -75,6 +80,7 @@ export default function ProfilePage() {
         body: JSON.stringify({
           user_first_name: userFirstName,
           user_email: userEmail,
+          user_phone: userPhone,
           user_license_plate: userLicensePlate,
         }),
       });
@@ -96,6 +102,38 @@ export default function ProfilePage() {
     router.push("/login");
   }
 
+  async function deleteAccount() {
+    const confirmed = confirm(
+      "Er du sikker på, at du vil slette din konto? Dette kan ikke fortrydes."
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setError("");
+
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(`${baseUrl}/api/me`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Kunne ikke slette konto");
+      }
+
+      localStorage.removeItem("token");
+      router.push("/login");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Noget gik galt");
+    }
+  }
+
   if (isLoading) {
     return (
       <main className="dashboard-page">
@@ -106,40 +144,17 @@ export default function ProfilePage() {
     );
   }
 
-  if (error && !userFirstName) {
-    return (
-      <main className="dashboard-page">
-        <div className="dashboard-shell">
-          <p style={{ color: "red" }}>{error}</p>
-          <button onClick={() => router.push("/login")}>Gå til login</button>
-        </div>
-      </main>
-    );
-  }
-
   return (
     <main className="dashboard-page">
       <div className="dashboard-shell">
         <section className="dashboard-hero">
           <div className="dashboard-hero-top">
-            <button
-              onClick={() => router.back()}
-              style={{
-                width: "34px",
-                height: "34px",
-                borderRadius: "50%",
-                border: "3px solid #67d27d",
-                background: "transparent",
-                color: "#67d27d",
-                fontWeight: 900,
-                fontSize: "18px",
-              }}
-            >
+            <button onClick={() => router.back()} style={backButtonStyle}>
               ←
             </button>
 
             <Image
-              src="/logo_sort.webp"
+              src="/logo_hvid.webp"
               alt="Wash World"
               width={180}
               height={60}
@@ -149,17 +164,7 @@ export default function ProfilePage() {
 
         <section style={{ background: "white", padding: "22px 18px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "28px" }}>
-            <div style={{
-              width: "42px",
-              height: "42px",
-              borderRadius: "50%",
-              background: "#67d27d",
-              color: "#000",
-              fontWeight: 900,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}>
+            <div style={avatarStyle}>
               {userFirstName.slice(0, 2).toUpperCase()}
             </div>
 
@@ -170,13 +175,7 @@ export default function ProfilePage() {
             Min Profil
           </h1>
 
-          <div style={{
-            border: "1px solid #e5e5e5",
-            borderRadius: "10px",
-            padding: "22px",
-            textAlign: "center",
-            marginBottom: "30px",
-          }}>
+          <div style={subscriptionCardStyle}>
             <h3 style={{ margin: "0 0 8px" }}>Guld pakke</h3>
 
             <p style={{ fontSize: "34px", fontWeight: 900, margin: 0 }}>
@@ -187,14 +186,7 @@ export default function ProfilePage() {
               ● AKTIV
             </p>
 
-            <button style={{
-              background: "#67d27d",
-              color: "white",
-              border: "none",
-              borderRadius: "8px",
-              padding: "13px 18px",
-              fontWeight: 800,
-            }}>
+            <button style={smallGreenButtonStyle}>
               Administrer abonnement
             </button>
           </div>
@@ -208,6 +200,9 @@ export default function ProfilePage() {
 
           <label style={labelStyle}>EMAIL</label>
           <input value={userEmail} onChange={(e) => setUserEmail(e.target.value)} style={inputStyle} />
+
+          <label style={labelStyle}>TELEFON</label>
+          <input value={userPhone} onChange={(e) => setUserPhone(e.target.value)} style={inputStyle} />
 
           <label style={labelStyle}>NUMMERPLADE</label>
           <input
@@ -226,11 +221,46 @@ export default function ProfilePage() {
           <button onClick={logout} style={logoutButtonStyle}>
             Log ud
           </button>
+
+          <button onClick={deleteAccount} style={deleteButtonStyle}>
+            Slet konto
+          </button>
         </section>
       </div>
     </main>
   );
 }
+
+const backButtonStyle = {
+  width: "34px",
+  height: "34px",
+  borderRadius: "50%",
+  border: "3px solid #67d27d",
+  background: "transparent",
+  color: "#67d27d",
+  fontWeight: 900,
+  fontSize: "18px",
+} as const;
+
+const avatarStyle = {
+  width: "42px",
+  height: "42px",
+  borderRadius: "50%",
+  background: "#67d27d",
+  color: "#000",
+  fontWeight: 900,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+} as const;
+
+const subscriptionCardStyle = {
+  border: "1px solid #e5e5e5",
+  borderRadius: "10px",
+  padding: "22px",
+  textAlign: "center",
+  marginBottom: "30px",
+} as const;
 
 const labelStyle = {
   display: "block",
@@ -247,6 +277,15 @@ const inputStyle = {
   borderRadius: "8px",
   padding: "13px",
   fontSize: "14px",
+} as const;
+
+const smallGreenButtonStyle = {
+  background: "#67d27d",
+  color: "white",
+  border: "none",
+  borderRadius: "8px",
+  padding: "13px 18px",
+  fontWeight: 800,
 } as const;
 
 const greenButtonStyle = {
@@ -270,4 +309,16 @@ const logoutButtonStyle = {
   fontWeight: 900,
   fontSize: "17px",
   marginTop: "24px",
+} as const;
+
+const deleteButtonStyle = {
+  width: "100%",
+  background: "#e04b4b",
+  color: "white",
+  border: "none",
+  borderRadius: "8px",
+  padding: "16px",
+  fontWeight: 900,
+  fontSize: "17px",
+  marginTop: "12px",
 } as const;

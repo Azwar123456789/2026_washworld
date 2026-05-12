@@ -62,6 +62,7 @@ CREATE TABLE `users` (
   `user_email` varchar(100) NOT NULL,
   `user_password_hash` varchar(255) NOT NULL,
   `user_license_plate` varchar(20) NOT NULL,
+  `user_phone` varchar(20) DEFAULT NULL,
   `user_verified_at` datetime DEFAULT NULL,
   `user_verification_key` varchar(32) NOT NULL,
   `user_reset_password_key` varchar(64) NOT NULL,
