@@ -431,7 +431,9 @@ def get_locations():
                 location_address,
                 location_opening_hours,
                 location_lat,
-                location_lng
+                location_lng,
+                que_status,
+                in_que
             FROM wash_locations
             ORDER BY location_city
         """
@@ -592,6 +594,34 @@ def dashboard():
             "user": user,
             "stats": stats
         }), 200
+
+    except Exception as ex:
+        ic(ex)
+        return jsonify({"error": str(ex)}), 500
+
+    finally:
+        if "cursor" in locals():
+            cursor.close()
+        if "db" in locals():
+            db.close()
+
+
+##############################
+@app.get("/api/queue-status")
+def get_queue_status():
+    try:
+        db, cursor = x.db()
+
+        q = """
+            SELECT location_city, que_status
+            FROM wash_locations
+            LIMIT 3
+        """
+
+        cursor.execute(q)
+        queue_data = cursor.fetchall()
+
+        return jsonify({"queue_data": queue_data}), 200
 
     except Exception as ex:
         ic(ex)

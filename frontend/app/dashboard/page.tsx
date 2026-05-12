@@ -1,36 +1,45 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
-const locations = [
-  {
-    name: "Viby",
-    address: "Gunnar Clausens Vej 2A, 8260 Viby",
-    distance: "14,6 km",
-    image: "/viby.webp",
-  },
-  {
-    name: "Højbjerg",
-    address: "Bodøstrupvej 20E, 8270 Højbjerg",
-    distance: "15,8 km",
-    image: "/højbjerg.webp",
-  },
-  {
-    name: "Tilst",
-    address: "Blomstervej 2T, 8381 Tilst",
-    distance: "21,7 km",
-    image: "/tilst.webp",
-  },
-];
-
-const queueData = [
-  { name: "Viby", text: "1 i kø / 3 minutter", level: "low" },
-  { name: "Højbjerg", text: "3 i kø / 10 minutter", level: "medium" },
-  { name: "Tilst", text: "7 i kø / 35 minutter", level: "high" },
-];
+const queueLevels = ["low", "medium", "high"];
 
 export default function DashboardPage() {
   const router = useRouter();
+  const [locations, setLocations] = useState([]);
+  const [queueData, setQueueData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [locationsRes, queueRes] = await Promise.all([
+          fetch("http://localhost:5001/api/locations"),
+          fetch("http://localhost:5001/api/queue-status")
+        ]);
+
+        const locationsData = await locationsRes.json();
+        const queueStatusData = await queueRes.json();
+
+        setLocations(locationsData.locations.slice(0, 3));
+
+        const formattedQueue = queueStatusData.queue_data.map((item, index) => ({
+          name: item.location_city,
+          text: item.que_status,
+          level: queueLevels[index % queueLevels.length],
+        }));
+
+        setQueueData(formattedQueue);
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   return (
     <main className="dashboard-page">
@@ -70,29 +79,43 @@ export default function DashboardPage() {
         <section className="locations-section">
           <h3 className="section-title">Find din nærmeste vaskehal</h3>
 
-          {locations.map((location) => (
-            <div key={location.name} className="location-card">
-              <img
-                src={location.image}
-                alt={location.name}
-                className="location-image"
-              />
+          {!loading && locations.length > 0 ? (
+            locations.map((location) => (
+              <div key={location.location_pk} className="location-card">
+                <img
+                  src={`/${location.location_city.toLowerCase()}.webp`}
+                  alt={location.location_city}
+                  className="location-image"
+                />
 
-              <div className="location-info">
-                <h4>{location.name}</h4>
-                <p>{location.address}</p>
+                <div className="location-info">
+                  <h4>{location.location_city}</h4>
+                  <p>{location.location_address}</p>
 
-                <div className="location-map-row">
-                  <a href="#">Vis på kort</a>
+                  <div className="location-map-row">
+                    <a href="#">Vis på kort</a>
+                  </div>
+
+                  <div className="location-queue-badge">
+                    <div className="queue-badge-item">
+                      <span className="queue-label">I kø</span>
+                      <span className="queue-value">{location.in_que}</span>
+                    </div>
+                    <div className="queue-badge-item">
+                      <span className="queue-label">Status</span>
+                      <span className="queue-value">{location.que_status}</span>
+                    </div>
+                  </div>
+
+                  <a href="#" className="location-more">
+                    Læs mere
+                  </a>
                 </div>
-
-                <p className="location-distance">{location.distance}</p>
-                <a href="#" className="location-more">
-                  Læs mere
-                </a>
               </div>
-            </div>
-          ))}
+            ))
+          ) : (
+            <p>Loading locations...</p>
+          )}
 
           <button className="show-more-button">Vis flere</button>
         </section>
@@ -100,17 +123,21 @@ export default function DashboardPage() {
         <section className="queue-section">
           <h3 className="section-title">Live kø status</h3>
 
-          {queueData.map((item) => (
-            <div key={item.name} className="queue-row">
-              <div className="queue-name">{item.name}</div>
-              <div className="queue-text">{item.text}</div>
-              <div className="queue-bars">
-                <span className={`queue-bar ${item.level}`}></span>
-                <span className={`queue-bar ${item.level}`}></span>
-                <span className={`queue-bar ${item.level}`}></span>
+          {!loading && queueData.length > 0 ? (
+            queueData.map((item) => (
+              <div key={item.name} className="queue-row">
+                <div className="queue-name">{item.name}</div>
+                <div className="queue-text">{item.text}</div>
+                <div className="queue-bars">
+                  <span className={`queue-bar ${item.level}`}></span>
+                  <span className={`queue-bar ${item.level}`}></span>
+                  <span className={`queue-bar ${item.level}`}></span>
+                </div>
               </div>
-            </div>
-          ))}
+            ))
+          ) : (
+            <p>Loading queue data...</p>
+          )}
         </section>
       </div>
     </main>
