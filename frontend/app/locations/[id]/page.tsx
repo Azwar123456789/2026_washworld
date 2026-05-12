@@ -1,19 +1,39 @@
 "use client";
 
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useLocations } from "../../hooks/useLocations";
+
+function createSlug(value: string) {
+  return value
+    .toLowerCase()
+    .replaceAll("æ", "ae")
+    .replaceAll("ø", "oe")
+    .replaceAll("å", "aa")
+    .replaceAll(" ", "-");
+}
+
+function getCapacity(index: number) {
+  const capacities = [
+    { label: "God kapacitet", color: "#67d27d" },
+    { label: "Medium kapacitet", color: "#d8c93f" },
+    { label: "Dårlig kapacitet", color: "#e04b4b" },
+  ];
+
+  return capacities[index % 3];
+}
 
 export default function LocationDetailsPage() {
   const params = useParams();
 
-  const { filteredLocations, isLoading, error } =
-    useLocations();
+  const { filteredLocations, isLoading, error } = useLocations();
 
-  const location = filteredLocations.find(
-    (loc) =>
-      loc.location_city.toLowerCase() ===
-      String(params.id).toLowerCase()
+  const locationIndex = filteredLocations.findIndex(
+    (loc) => createSlug(loc.location_city) === String(params.id)
   );
+
+  const location = filteredLocations[locationIndex];
+  const capacity = getCapacity(locationIndex >= 0 ? locationIndex : 0);
 
   if (isLoading) {
     return (
@@ -52,22 +72,40 @@ export default function LocationDetailsPage() {
         paddingBottom: "100px",
       }}
     >
-      <div
-        style={{
-          maxWidth: "420px",
-          margin: "0 auto",
-        }}
-      >
-        {/* Header */}
+      <div style={{ maxWidth: "420px", margin: "0 auto" }}>
+        <Link
+          href="/locations"
+          style={{
+            color: "#67d27d",
+            fontWeight: 700,
+            textDecoration: "none",
+            display: "inline-block",
+            marginBottom: "14px",
+          }}
+        >
+          ← Tilbage
+        </Link>
+
         <div
           style={{
             background: "#000",
             color: "white",
             padding: "26px 20px",
-            borderRadius: "0 0 18px 18px",
+            borderRadius: "18px",
             marginBottom: "20px",
           }}
         >
+          <p
+            style={{
+              margin: "0 0 8px 0",
+              color: capacity.color,
+              fontWeight: 800,
+              fontSize: "14px",
+            }}
+          >
+            ● {capacity.label}
+          </p>
+
           <h1
             style={{
               margin: 0,
@@ -78,18 +116,21 @@ export default function LocationDetailsPage() {
             {location.location_name}
           </h1>
 
-          <p
+          <a
+            href={mapsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
             style={{
               marginTop: "10px",
               color: "#bbb",
               fontSize: "14px",
+              display: "inline-block",
             }}
           >
-            {location.location_address}
-          </p>
+            📍 {location.location_address}
+          </a>
         </div>
 
-        {/* Info card */}
         <div
           style={{
             background: "white",
@@ -98,33 +139,30 @@ export default function LocationDetailsPage() {
             marginBottom: "18px",
           }}
         >
-          <h2
-            style={{
-              marginTop: 0,
-              marginBottom: "14px",
-              fontSize: "18px",
-            }}
-          >
+          <h2 style={{ marginTop: 0, marginBottom: "14px", fontSize: "18px" }}>
             Information
           </h2>
 
           <p>
-            <strong>By:</strong>{" "}
-            {location.location_city}
+            <strong>By:</strong> {location.location_city}
           </p>
 
           <p>
-            <strong>Adresse:</strong>{" "}
-            {location.location_address}
+            <strong>Adresse:</strong> {location.location_address}
           </p>
 
           <p>
-            <strong>Åbningstid:</strong>{" "}
-            {location.location_opening_hours}
+            <strong>Åbningstid:</strong> {location.location_opening_hours}
+          </p>
+
+          <p>
+            <strong>Status:</strong>{" "}
+            <span style={{ color: capacity.color, fontWeight: 800 }}>
+              {capacity.label}
+            </span>
           </p>
         </div>
 
-        {/* Maps button */}
         <a
           href={mapsUrl}
           target="_blank"
@@ -143,7 +181,7 @@ export default function LocationDetailsPage() {
             boxSizing: "border-box",
           }}
         >
-          Åbn i Google Maps
+          Åbn adresse i Maps
         </a>
       </div>
     </main>
