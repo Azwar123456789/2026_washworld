@@ -115,15 +115,9 @@ export default function LocationsPage() {
     );
   }
 
-  if (activeFilter === "Normal") {
-    displayedLocations = displayedLocations.filter(
-      (location) => getQueueStatus(location.que_status).label === "Normal"
-    );
-  }
-
-  if (activeFilter === "Busy") {
-    displayedLocations = displayedLocations.filter(
-      (location) => getQueueStatus(location.que_status).label === "Busy"
+  if (activeFilter === "Åben") {
+    displayedLocations = displayedLocations.filter((location) =>
+      location.location_opening_hours.includes("22:00")
     );
   }
 
@@ -216,10 +210,10 @@ export default function LocationsPage() {
           style={{
             display: "flex",
             gap: "8px",
-            marginBottom: "10px",
+            marginBottom: "18px",
           }}
         >
-          {["Easy", "Normal", "Busy"].map((filter) => (
+          {["Easy", "Åben", "Afstand"].map((filter) => (
             <button
               key={filter}
               onClick={() =>
@@ -241,26 +235,6 @@ export default function LocationsPage() {
             </button>
           ))}
         </div>
-
-        <button
-          onClick={() =>
-            setActiveFilter(activeFilter === "Afstand" ? "" : "Afstand")
-          }
-          style={{
-            width: "100%",
-            background: activeFilter === "Afstand" ? "#67d27d" : "white",
-            color: activeFilter === "Afstand" ? "white" : "#111",
-            border: "1px solid #d9d9d9",
-            borderRadius: "8px",
-            padding: "10px 8px",
-            fontSize: "11px",
-            fontWeight: 700,
-            cursor: "pointer",
-            marginBottom: "18px",
-          }}
-        >
-          Sortér efter afstand
-        </button>
 
         {activeFilter === "Afstand" && !userLocation && (
           <p
