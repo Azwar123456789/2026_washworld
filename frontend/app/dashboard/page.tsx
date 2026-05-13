@@ -16,7 +16,7 @@ export default function DashboardPage() {
       try {
         const [locationsRes, queueRes] = await Promise.all([
           fetch("http://localhost:5001/api/locations"),
-          fetch("http://localhost:5001/api/queue-status")
+          fetch("http://localhost:5001/api/queue-status"),
         ]);
 
         const locationsData = await locationsRes.json();
@@ -24,11 +24,13 @@ export default function DashboardPage() {
 
         setLocations(locationsData.locations.slice(0, 3));
 
-        const formattedQueue = queueStatusData.queue_data.map((item, index) => ({
-          name: item.location_city,
-          text: item.que_status,
-          level: queueLevels[index % queueLevels.length],
-        }));
+        const formattedQueue = queueStatusData.queue_data.map(
+          (item, index) => ({
+            name: item.location_city,
+            text: item.que_status,
+            level: queueLevels[index % queueLevels.length],
+          }),
+        );
 
         setQueueData(formattedQueue);
       } catch (error) {
@@ -44,7 +46,6 @@ export default function DashboardPage() {
   return (
     <main className="dashboard-page">
       <div className="dashboard-shell">
-
         <section className="dashboard-hero">
           <div className="dashboard-hero-top">
             <img
@@ -67,10 +68,7 @@ export default function DashboardPage() {
             <h3>Start vask</h3>
             <p>Scan QR-koden på maskinen for at starte vask</p>
 
-            <button
-              className="qr-button"
-              onClick={() => router.push("/qr")}
-            >
+            <button className="qr-button" onClick={() => router.push("/qr")}>
               Vis QR-kode
             </button>
           </div>
@@ -83,7 +81,9 @@ export default function DashboardPage() {
             locations.map((location) => (
               <div key={location.location_pk} className="location-card">
                 <img
-                  src={`/${location.location_city.toLowerCase()}.webp`}
+                  src={
+                    "https://washworld-wordpress-production.storage.googleapis.com/wp-content/uploads/2021/03/28140259/WashWorld_lokation-e1618300360483.jpg"
+                  }
                   alt={location.location_city}
                   className="location-image"
                 />
@@ -93,7 +93,7 @@ export default function DashboardPage() {
                   <p>{location.location_address}</p>
 
                   <div className="location-map-row">
-                    <a href="#">Vis på kort</a>
+                    <a href="#">📍Vis på kort</a>
                   </div>
 
                   <div className="location-queue-badge">
@@ -118,26 +118,6 @@ export default function DashboardPage() {
           )}
 
           <button className="show-more-button">Vis flere</button>
-        </section>
-
-        <section className="queue-section">
-          <h3 className="section-title">Live kø status</h3>
-
-          {!loading && queueData.length > 0 ? (
-            queueData.map((item) => (
-              <div key={item.name} className="queue-row">
-                <div className="queue-name">{item.name}</div>
-                <div className="queue-text">{item.text}</div>
-                <div className="queue-bars">
-                  <span className={`queue-bar ${item.level}`}></span>
-                  <span className={`queue-bar ${item.level}`}></span>
-                  <span className={`queue-bar ${item.level}`}></span>
-                </div>
-              </div>
-            ))
-          ) : (
-            <p>Loading queue data...</p>
-          )}
         </section>
       </div>
     </main>
