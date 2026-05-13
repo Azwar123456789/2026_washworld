@@ -99,7 +99,9 @@ CREATE TABLE `wash_locations` (
   `location_address` varchar(255) NOT NULL,
   `location_opening_hours` varchar(100) NOT NULL,
   `location_lat` decimal(10,7) DEFAULT NULL,
-  `location_lng` decimal(10,7) DEFAULT NULL
+  `location_lng` decimal(10,7) DEFAULT NULL,
+  `in_que` int(11) NOT NULL DEFAULT 0,
+  `que_status` int(11) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
