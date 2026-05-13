@@ -15,15 +15,18 @@ const getStatusLabel = (status) => {
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [locations, setLocations] = useState([]);
+  const [allLocations, setAllLocations] = useState([]);
+  const [displayedLocations, setDisplayedLocations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const locationsRes = await fetch("http://localhost:5001/api/locations");
         const locationsData = await locationsRes.json();
-        setLocations(locationsData.locations.slice(0, 3));
+        setAllLocations(locationsData.locations);
+        setDisplayedLocations(locationsData.locations.slice(0, 3));
       } catch (error) {
         console.error("Failed to fetch data:", error);
       } finally {
@@ -33,6 +36,16 @@ export default function DashboardPage() {
 
     fetchData();
   }, []);
+
+  const handleShowMore = () => {
+    setShowAll(true);
+    setDisplayedLocations(allLocations);
+  };
+
+  const handleShowLess = () => {
+    setShowAll(false);
+    setDisplayedLocations(allLocations.slice(0, 3));
+  };
 
   return (
     <main className="dashboard-page">
@@ -65,7 +78,7 @@ export default function DashboardPage() {
           </div>
         </section>
 
-        <LocationsSection locations={locations} loading={loading} />
+        <LocationsSection locations={displayedLocations} loading={loading} showAll={showAll} onShowMore={handleShowMore} onShowLess={handleShowLess} />
       </div>
     </main>
   );

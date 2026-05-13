@@ -5,7 +5,7 @@ const getStatusLabel = (status) => {
   return "Busy";
 };
 
-export default function LocationsSection({ locations, loading }) {
+export default function LocationsSection({ locations, loading, showAll, onShowMore, onShowLess }) {
   return (
     <section className="locations-section">
       <h3 className="section-title">Find din nærmeste vaskehal</h3>
@@ -50,7 +50,8 @@ export default function LocationsSection({ locations, loading }) {
         <p>Loading locations...</p>
       )}
 
-      <button className="show-more-button">Vis flere</button>
+      {!showAll && <button className="show-more-button" onClick={onShowMore}>Vis flere</button>}
+      {showAll && <button className="show-more-button" onClick={onShowLess}>Vis mindre</button>}
     </section>
   );
 }
