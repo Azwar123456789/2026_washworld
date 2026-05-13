@@ -350,15 +350,23 @@ export default function LocationsPage() {
                   </div>
                 </div>
 
-                <h3
-                  style={{
-                    margin: "0 0 6px 0",
-                    fontSize: "28px",
-                    fontWeight: 700,
-                  }}
-                >
-                  {location.location_name}
-                </h3>
+                <Link
+  href={locationUrl}
+  style={{
+    textDecoration: "none",
+    color: "#111",
+  }}
+>
+  <h3
+    style={{
+      margin: "0 0 6px 0",
+      fontSize: "28px",
+      fontWeight: 700,
+    }}
+  >
+    {location.location_name}
+  </h3>
+</Link>
 
                 <a
                   href={mapsUrl}
