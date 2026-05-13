@@ -116,9 +116,10 @@ INSERT INTO `wash_locations`
   `location_address`,
   `location_opening_hours`,
   `location_lat`,
-  `location_lng`
+  `location_lng`,
+  `in_que`,
+  `que_status`
 )
-
 VALUES
 
 ('loc001', 'Wash World Køge', 'Køge', 'Københavnsvej 86, 4600 Køge', '07:00 - 22:00', 55.456146, 12.182126, 1, 2),
