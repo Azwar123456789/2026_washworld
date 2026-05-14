@@ -636,6 +636,44 @@ def dashboard():
             db.close()
 
 
+############################## user_pk is hardcoded for testing
+@app.get("/api/wash-stats")
+def wash_stats():
+    try:
+        user_pk = "c97a81e4f57f484aa0de5a8ee9c68882"
+        db, cursor = x.db()
+
+        q = """
+            SELECT 
+                MONTH(FROM_UNIXTIME(washed_at)) AS month,
+                COUNT(wash_pk) AS total_washes
+            FROM wash_history
+            WHERE user_fk = %s
+            GROUP BY MONTH(FROM_UNIXTIME(washed_at))
+            ORDER BY month
+        """
+
+        cursor.execute(q, (user_pk,))
+        results = cursor.fetchall()
+
+        wash_data = [0] * 12
+        for row in results:
+            if row["month"]:
+                wash_data[row["month"] - 1] = row["total_washes"]
+
+        return jsonify({"wash_data": wash_data}), 200
+
+    except Exception as ex:
+        ic(ex)
+        return jsonify({"error": str(ex)}), 500
+
+    finally:
+        if "cursor" in locals():
+            cursor.close()
+        if "db" in locals():
+            db.close()
+
+
 ##############################
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5001)
