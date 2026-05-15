@@ -184,13 +184,12 @@ def send_email(receiver_email, subject, html):
         password = "yqmx yoel lvoy kglm"  # If 2FA is on, use an App Password instead
 
         # Receiver email address
-        receiver_email = "campuskoreskolee@gmail.com"
         
         # Create the email message
         message = MIMEMultipart()
         message["From"] = "Washworld"
         message["To"] = receiver_email
-        message["Subject"] = "Please verify your account"
+        message["Subject"] = "Wash World"
 
         # Body of the email
         # body = f"""<h1>Hi</h1><h2>Hi again</h2>"""

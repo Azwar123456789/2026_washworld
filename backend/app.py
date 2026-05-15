@@ -341,38 +341,48 @@ def verify_account(key):
 @app.post("/api/forgot-password")
 def forgot_password():
     try:
-        email = x.validate_email()  # valider email fra request
+        email = x.validate_email()
 
         db, cursor = x.db()
 
-        # Find user
-        q = "SELECT user_pk, user_first_name FROM users WHERE user_email=%s"
+        q = """
+            SELECT user_pk, user_first_name 
+            FROM users 
+            WHERE user_email = %s
+        """
         cursor.execute(q, (email,))
         user = cursor.fetchone()
 
-        # Vi sender success uanset om email findes for sikkerhed
         if not user:
             return jsonify({"message": "Check your email"}), 200
 
-        # Generer reset key
         reset_key = uuid.uuid4().hex + uuid.uuid4().hex
-
-        # Gem i password_reset_tokens og users
         reset_pk = uuid.uuid4().hex
         created_at = int(time.time())
 
         cursor.execute("""
-            INSERT INTO password_reset_tokens (reset_pk, user_fk, reset_key, used_at, created_at)
+            INSERT INTO password_reset_tokens 
+            (reset_pk, user_fk, reset_key, used_at, created_at)
             VALUES (%s, %s, %s, %s, %s)
-        """, (reset_pk, user["user_pk"], reset_key, 0, created_at))
+        """, (
+            reset_pk,
+            user["user_pk"],
+            reset_key,
+            0,
+            created_at
+        ))
 
         cursor.execute("""
-            UPDATE users SET user_reset_password_key = %s WHERE user_pk = %s
-        """, (reset_key, user["user_pk"]))
+            UPDATE users 
+            SET user_reset_password_key = %s 
+            WHERE user_pk = %s
+        """, (
+            reset_key,
+            user["user_pk"]
+        ))
 
         db.commit()
 
-        # Email HTML
         html = f"""
             <h1>Reset your Wash World password</h1>
             <p>Hi {user['user_first_name']}</p>
@@ -382,18 +392,23 @@ def forgot_password():
             </a>
         """
 
-        x.send_email(email, "Reset your Wash World password", html)
+        x.send_email(
+            email,
+            "Reset your Wash World password",
+            html
+        )
 
         return jsonify({"message": "Check your email"}), 200
 
     except Exception as ex:
         ic(ex)
-        # Specific error handling kan tilføjes her, hvis ønsket
         return jsonify({"error": str(ex)}), 500
 
     finally:
-        if "cursor" in locals(): cursor.close()
-        if "db" in locals(): db.close()
+        if "cursor" in locals():
+            cursor.close()
+        if "db" in locals():
+            db.close()
 
 
 ##############################
