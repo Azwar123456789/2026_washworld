@@ -14,23 +14,27 @@ function createSlug(value: string) {
     .replaceAll(" ", "-");
 }
 
-function getCapacity(index: number) {
-  const capacities = [
-    {
-      label: "God kapacitet",
-      color: "#67d27d",
-    },
-    {
-      label: "Medium kapacitet",
-      color: "#d8c93f",
-    },
-    {
-      label: "Dårlig kapacitet",
-      color: "#e04b4b",
-    },
-  ];
+function getQueueStatus(status: number | string | null | undefined) {
+  const statusNum = Number(status || 1);
 
-  return capacities[index % 3];
+  if (statusNum <= 3) {
+    return {
+      label: "Easy",
+      color: "#67d27d",
+    };
+  }
+
+  if (statusNum <= 7) {
+    return {
+      label: "Normal",
+      color: "#d8c93f",
+    };
+  }
+
+  return {
+    label: "Busy",
+    color: "#e04b4b",
+  };
 }
 
 function calculateDistance(
@@ -47,9 +51,9 @@ function calculateDistance(
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos((lat1 * Math.PI) / 180) *
-    Math.cos((lat2 * Math.PI) / 180) *
-    Math.sin(dLon / 2) *
-    Math.sin(dLon / 2);
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
 
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
@@ -82,7 +86,6 @@ export default function LocationsPage() {
   } = useLocations();
 
   const [activeFilter, setActiveFilter] = useState("");
-
   const [userLocation, setUserLocation] = useState<{
     lat: number;
     lng: number;
@@ -106,15 +109,15 @@ export default function LocationsPage() {
 
   let displayedLocations = [...filteredLocations];
 
-  if (activeFilter === "Åben nu") {
-    displayedLocations = displayedLocations.filter((location) =>
-      location.location_opening_hours.includes("22:00")
+  if (activeFilter === "Easy") {
+    displayedLocations = displayedLocations.filter(
+      (location) => getQueueStatus(location.que_status).label === "Easy"
     );
   }
 
-  if (activeFilter === "God kapacitet") {
-    displayedLocations = displayedLocations.filter(
-      (_, index) => getCapacity(index).label === "God kapacitet"
+  if (activeFilter === "Åben") {
+    displayedLocations = displayedLocations.filter((location) =>
+      location.location_opening_hours.includes("22:00")
     );
   }
 
@@ -210,7 +213,7 @@ export default function LocationsPage() {
             marginBottom: "18px",
           }}
         >
-          {["God kapacitet", "Åben nu", "Afstand"].map((filter) => (
+          {["Easy", "Åben", "Afstand"].map((filter) => (
             <button
               key={filter}
               onClick={() =>
@@ -257,8 +260,9 @@ export default function LocationsPage() {
             gap: "14px",
           }}
         >
-          {displayedLocations.map((location, index) => {
+          {displayedLocations.map((location) => {
             const distance = getDistance(location, userLocation);
+            const queueStatus = getQueueStatus(location.que_status);
 
             const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
               location.location_address
@@ -267,8 +271,6 @@ export default function LocationsPage() {
             const locationUrl = `/locations/${createSlug(
               location.location_city
             )}`;
-
-            const capacity = getCapacity(index);
 
             return (
               <div
@@ -310,7 +312,7 @@ export default function LocationsPage() {
                       style={{
                         width: "6px",
                         height: "6px",
-                        background: capacity.color,
+                        background: queueStatus.color,
                         borderRadius: "50%",
                       }}
                     />
@@ -322,7 +324,17 @@ export default function LocationsPage() {
                         textTransform: "uppercase",
                       }}
                     >
-                      {capacity.label}
+                      Status: {queueStatus.label}
+                    </span>
+
+                    <span
+                      style={{
+                        fontSize: "9px",
+                        color: "#888",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      I kø: {location.in_que ?? 0}
                     </span>
                   </div>
 
@@ -338,15 +350,23 @@ export default function LocationsPage() {
                   </div>
                 </div>
 
-                <h3
-                  style={{
-                    margin: "0 0 6px 0",
-                    fontSize: "28px",
-                    fontWeight: 700,
-                  }}
-                >
-                  {location.location_name}
-                </h3>
+                <Link
+  href={locationUrl}
+  style={{
+    textDecoration: "none",
+    color: "#111",
+  }}
+>
+  <h3
+    style={{
+      margin: "0 0 6px 0",
+      fontSize: "28px",
+      fontWeight: 700,
+    }}
+  >
+    {location.location_name}
+  </h3>
+</Link>
 
                 <a
                   href={mapsUrl}
