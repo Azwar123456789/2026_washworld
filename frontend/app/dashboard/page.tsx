@@ -45,7 +45,7 @@ export default function DashboardPage() {
             />
           </div>
 
-          <h2 className="dashboard-greeting">Hej, Jonas</h2>
+          <h2 className="dashboard-greeting">Hej, Azwar</h2>
           <p className="dashboard-subtitle">Klar til din næste vask?</p>
         </section>
 
