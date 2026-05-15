@@ -209,7 +209,7 @@ def login():
 
 
 ##############################
-@app.route("/api/me", methods=["GET", "PUT"])
+@app.route("/api/me", methods=["GET", "PUT", "DELETE"])
 @jwt_required()
 def me():
     try:
@@ -222,7 +222,8 @@ def me():
                     user_pk,
                     user_first_name,
                     user_email,
-                    user_license_plate
+                    user_license_plate,
+                    user_phone
                 FROM users
                 WHERE user_pk = %s
             """, (user_pk,))
@@ -235,19 +236,26 @@ def me():
             return jsonify({"user": user}), 200
 
         if request.method == "PUT":
-            data = request.get_json()
+            data = x.get_data()
+
+            user_first_name = x.validate_user_first_name(data.get("user_first_name"))
+            user_email = x.validate_email(data.get("user_email"))
+            user_license_plate = x.validate_license_plate(data.get("user_license_plate"))
+            user_phone = (data.get("user_phone") or "").strip()
 
             cursor.execute("""
                 UPDATE users
                 SET 
                     user_first_name = %s,
                     user_email = %s,
-                    user_license_plate = %s
+                    user_license_plate = %s,
+                    user_phone = %s
                 WHERE user_pk = %s
             """, (
-                data.get("user_first_name"),
-                data.get("user_email"),
-                data.get("user_license_plate"),
+                user_first_name,
+                user_email,
+                user_license_plate,
+                user_phone,
                 user_pk
             ))
 
@@ -255,7 +263,31 @@ def me():
 
             return jsonify({"message": "Profile updated"}), 200
 
+        if request.method == "DELETE":
+            cursor.execute("DELETE FROM password_reset_tokens WHERE user_fk = %s", (user_pk,))
+            cursor.execute("DELETE FROM subscriptions WHERE user_fk = %s", (user_pk,))
+            cursor.execute("DELETE FROM wash_history WHERE user_fk = %s", (user_pk,))
+            cursor.execute("DELETE FROM users WHERE user_pk = %s", (user_pk,))
+
+            db.commit()
+
+            return jsonify({"message": "Account deleted"}), 200
+
     except Exception as ex:
+        ic(ex)
+
+        if "company_exception user_first_name" in str(ex):
+            return jsonify({"error": "Navn er ugyldigt"}), 400
+
+        if "company_exception email" in str(ex):
+            return jsonify({"error": "Email er ugyldig"}), 400
+
+        if "company_exception license_plate" in str(ex):
+            return jsonify({"error": "Nummerplade er ugyldig"}), 400
+
+        if "Duplicate entry" in str(ex):
+            return jsonify({"error": "Email findes allerede"}), 409
+
         return jsonify({"error": str(ex)}), 500
 
     finally:
@@ -431,7 +463,9 @@ def get_locations():
                 location_address,
                 location_opening_hours,
                 location_lat,
-                location_lng
+                location_lng,
+                que_status,
+                in_que
             FROM wash_locations
             ORDER BY location_city
         """
@@ -592,6 +626,112 @@ def dashboard():
             "user": user,
             "stats": stats
         }), 200
+
+    except Exception as ex:
+        ic(ex)
+        return jsonify({"error": str(ex)}), 500
+
+    finally:
+        if "cursor" in locals():
+            cursor.close()
+        if "db" in locals():
+            db.close()
+
+
+############################## user_pk is hardcoded for testing
+@app.get("/api/wash-stats")
+def wash_stats():
+    try:
+        user_pk = "c97a81e4f57f484aa0de5a8ee9c68882"
+        db, cursor = x.db()
+
+        q = """
+            SELECT 
+                MONTH(FROM_UNIXTIME(washed_at)) AS month,
+                COUNT(wash_pk) AS total_washes
+            FROM wash_history
+            WHERE user_fk = %s
+            GROUP BY MONTH(FROM_UNIXTIME(washed_at))
+            ORDER BY month
+        """
+
+        cursor.execute(q, (user_pk,))
+        results = cursor.fetchall()
+
+        wash_data = [0] * 12
+        for row in results:
+            if row["month"]:
+                wash_data[row["month"] - 1] = row["total_washes"]
+
+        return jsonify({"wash_data": wash_data}), 200
+
+    except Exception as ex:
+        ic(ex)
+        return jsonify({"error": str(ex)}), 500
+
+    finally:
+        if "cursor" in locals():
+            cursor.close()
+        if "db" in locals():
+            db.close()
+
+
+##############################
+@app.get("/api/activity-log")
+def activity_log():
+    try:
+        user_pk = "c97a81e4f57f484aa0de5a8ee9c68882"
+        db, cursor = x.db()
+
+        q = """
+            SELECT 
+                wc.wash_type, 
+                wc.subscription_price,
+                wl.location_city,
+                wh.washed_at
+            FROM 
+                wash_categories wc
+            JOIN 
+                wash_history wh ON wc.wash_type = wh.wash_category_fk
+            JOIN
+                wash_locations wl ON wh.location_fk = wl.location_pk
+            WHERE 
+                wh.user_fk = %s
+            ORDER BY wh.washed_at DESC
+        """
+
+        cursor.execute(q, (user_pk,))
+        results = cursor.fetchall()
+
+        return jsonify({"activity_log": results}), 200
+
+    except Exception as ex:
+        ic(ex)
+        return jsonify({"error": str(ex)}), 500
+
+    finally:
+        if "cursor" in locals():
+            cursor.close()
+        if "db" in locals():
+            db.close()
+
+
+##############################
+@app.get("/api/queue-status")
+def get_queue_status():
+    try:
+        db, cursor = x.db()
+
+        q = """
+            SELECT location_city, que_status
+            FROM wash_locations
+            LIMIT 3
+        """
+
+        cursor.execute(q)
+        queue_data = cursor.fetchall()
+
+        return jsonify({"queue_data": queue_data}), 200
 
     except Exception as ex:
         ic(ex)

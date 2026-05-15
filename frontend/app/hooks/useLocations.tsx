@@ -1,9 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
-
-const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+import { useEffect, useMemo, useState } from "react";
 
 export type WashLocation = {
   location_pk: string;
@@ -14,36 +11,58 @@ export type WashLocation = {
   location_lat?: number | string | null;
   location_lng?: number | string | null;
   location_description?: string | null;
+  in_que?: number | string | null;
+  que_status?: number | string | null;
 };
 
+const baseUrl =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+
 export function useLocations() {
+  const [locations, setLocations] = useState<WashLocation[]>([]);
   const [search, setSearch] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["locations"],
-    queryFn: async () => {
-      const response = await fetch(`${baseUrl}/api/locations`);
-      const result = await response.json();
+  useEffect(() => {
+    async function getLocations() {
+      try {
+        setIsLoading(true);
+        setError("");
 
-      if (!response.ok) {
-        throw new Error(result.error || "Could not fetch locations");
+        const response = await fetch(`${baseUrl}/api/locations`);
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || "Kunne ikke hente vaskehaller");
+        }
+
+        setLocations(result.locations || []);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Noget gik galt");
+      } finally {
+        setIsLoading(false);
       }
+    }
 
-      return result.locations as WashLocation[];
-    },
-  });
+    getLocations();
+  }, []);
 
-  const locations = data || [];
+  const filteredLocations = useMemo(() => {
+    const query = search.toLowerCase().trim();
 
-  const filteredLocations = locations.filter((location) => {
-    const query = search.toLowerCase();
+    if (!query) {
+      return locations;
+    }
 
-    return (
-      location.location_city.toLowerCase().includes(query) ||
-      location.location_name.toLowerCase().includes(query) ||
-      location.location_address.toLowerCase().includes(query)
-    );
-  });
+    return locations.filter((location) => {
+      return (
+        location.location_name.toLowerCase().includes(query) ||
+        location.location_city.toLowerCase().includes(query) ||
+        location.location_address.toLowerCase().includes(query)
+      );
+    });
+  }, [locations, search]);
 
   return {
     locations,
@@ -51,6 +70,6 @@ export function useLocations() {
     search,
     setSearch,
     isLoading,
-    error: error?.message || "",
+    error,
   };
 }

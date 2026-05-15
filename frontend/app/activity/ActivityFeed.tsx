@@ -4,12 +4,10 @@
 https: "use client";
 
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import ApexCharts from "apexcharts";
 
-const washData = [12, 5, 27, 10, 2, 6, 8, 11, 23, 13, 6, 24];
-
-const options = {
+const baseOptions = {
   chart: {
     type: "bar",
     height: 600,
@@ -40,12 +38,6 @@ const options = {
     },
   },
   colors: ["#42BC69"],
-  series: [
-    {
-      name: "Washes",
-      data: washData,
-    },
-  ],
   xaxis: {
     categories: [
       "JAN",
@@ -79,11 +71,37 @@ const options = {
 
 export default function ActivityFeed() {
   const chartRef = useRef<HTMLDivElement | null>(null);
-  const totalLast12Months = washData.reduce((sum, value) => sum + value, 0);
-  const last30Days = washData[washData.length - 1];
+  const [washData, setWashData] = useState<number[]>([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!chartRef.current) return;
+    const fetchWashData = async () => {
+      try {
+        const token = localStorage.getItem("access_token");
+        const response = await fetch("http://localhost:5001/api/wash-stats", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await response.json();
+        if (data.wash_data) {
+          setWashData(data.wash_data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch wash data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchWashData();
+  }, []);
+
+  useEffect(() => {
+    if (!chartRef.current || loading) return;
+
+    const options = {
+      ...baseOptions,
+      series: [{ name: "Washes", data: washData }],
+    };
 
     const chart = new ApexCharts(chartRef.current, options);
     chart.render();
@@ -91,7 +109,10 @@ export default function ActivityFeed() {
     return () => {
       chart.destroy();
     };
-  }, []);
+  }, [washData, loading]);
+
+  const totalLast12Months = washData.reduce((sum, value) => sum + value, 0);
+  const last30Days = washData[washData.length - 1];
 
   return (
     <section className="activity-content">
