@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 
 export default function ActivityLogPage() {
   const [recentWashes, setRecentWashes] = useState([]);
+  const [totalWashPrice, setTotalWashPrice] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -30,6 +31,9 @@ export default function ActivityLogPage() {
             };
           });
           setRecentWashes(formattedWashes);
+          
+          const total = data.activity_log.reduce((sum, wash) => sum + wash.subscription_price, 0);
+          setTotalWashPrice(total);
         }
       } catch (error) {
         console.error("Error fetching activity log:", error);
@@ -92,19 +96,10 @@ export default function ActivityLogPage() {
 
           <div className="savings-grid">
             <div className="saving-card">
-              <div className="saving-card-icon">💰</div>
-              <div>
-                <p className="saving-card-title">Værdi af din vask</p>
-                <p className="saving-card-value">1234 kr</p>
-                <p className="saving-card-note">(uden abonnement)</p>
-              </div>
-            </div>
-            <div className="saving-card">
               <div className="saving-card-icon">💳</div>
               <div>
                 <p className="saving-card-title">Du har betalt</p>
-                <p className="saving-card-value">1074 kr</p>
-                <p className="saving-card-note">(169 kr x 6 mdr)</p>
+                <p className="saving-card-value">{totalWashPrice} kr</p>
               </div>
             </div>
           </div>
