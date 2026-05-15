@@ -13,16 +13,20 @@ type User = {
   user_email: string;
   user_license_plate: string;
   user_phone?: string | null;
+  user_membership?: string | null;
 };
 
 export default function ProfilePage() {
   const router = useRouter();
 
   const [isLoading, setIsLoading] = useState(true);
+
   const [userFirstName, setUserFirstName] = useState("");
   const [userEmail, setUserEmail] = useState("");
   const [userPhone, setUserPhone] = useState("");
   const [userLicensePlate, setUserLicensePlate] = useState("");
+  const [userMembership, setUserMembership] = useState("Guld");
+
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
@@ -54,6 +58,7 @@ export default function ProfilePage() {
         setUserEmail(user.user_email);
         setUserPhone(user.user_phone || "");
         setUserLicensePlate(user.user_license_plate);
+        setUserMembership(user.user_membership || "Guld");
       } catch (err) {
         setError(err instanceof Error ? err.message : "Noget gik galt");
       } finally {
@@ -82,6 +87,7 @@ export default function ProfilePage() {
           user_email: userEmail,
           user_phone: userPhone,
           user_license_plate: userLicensePlate,
+          user_membership: userMembership,
         }),
       });
 
@@ -100,38 +106,6 @@ export default function ProfilePage() {
   function logout() {
     localStorage.removeItem("token");
     router.push("/login");
-  }
-
-  async function deleteAccount() {
-    const confirmed = confirm(
-      "Er du sikker på, at du vil slette din konto? Dette kan ikke fortrydes."
-    );
-
-    if (!confirmed) return;
-
-    try {
-      setError("");
-
-      const token = localStorage.getItem("token");
-
-      const response = await fetch(`${baseUrl}/api/me`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || "Kunne ikke slette konto");
-      }
-
-      localStorage.removeItem("token");
-      router.push("/login");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Noget gik galt");
-    }
   }
 
   if (isLoading) {
@@ -163,7 +137,14 @@ export default function ProfilePage() {
         </section>
 
         <section style={{ background: "white", padding: "22px 18px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "28px" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              marginBottom: "28px",
+            }}
+          >
             <div style={avatarStyle}>
               {userFirstName.slice(0, 2).toUpperCase()}
             </div>
@@ -171,59 +152,149 @@ export default function ProfilePage() {
             <strong>{userFirstName}</strong>
           </div>
 
-          <h1 style={{ textAlign: "center", fontSize: "26px", marginBottom: "28px" }}>
+          <h1
+            style={{
+              textAlign: "center",
+              fontSize: "26px",
+              marginBottom: "28px",
+            }}
+          >
             Min Profil
           </h1>
 
           <div style={subscriptionCardStyle}>
-            <h3 style={{ margin: "0 0 8px" }}>Guld pakke</h3>
+            <h3
+              style={{
+                margin: "0 0 14px",
+                fontSize: "22px",
+                fontWeight: 800,
+              }}
+            >
+              Dit medlemskab
+            </h3>
 
-            <p style={{ fontSize: "34px", fontWeight: 900, margin: 0 }}>
-              299 <span style={{ fontSize: "14px", fontWeight: 400 }}>kr. / md.</span>
-            </p>
+            <select
+              value={userMembership}
+              onChange={(e) => setUserMembership(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "16px",
+                borderRadius: "10px",
+                border: "1px solid #ddd",
+                fontSize: "16px",
+                marginBottom: "18px",
+                background: "white",
+              }}
+            >
+              <option value="Guld">Guld</option>
+              <option value="Premium">Premium</option>
+              <option value="Brilliant">Brilliant</option>
+            </select>
 
-            <p style={{ color: "#67d27d", fontSize: "12px", fontWeight: 800 }}>
+            <p
+              style={{
+                color: "#67d27d",
+                fontSize: "12px",
+                fontWeight: 800,
+                marginBottom: "10px",
+              }}
+            >
               ● AKTIV
             </p>
 
-            <button style={smallGreenButtonStyle}>
-              Administrer abonnement
-            </button>
+            <p
+              style={{
+                color: "#777",
+                fontSize: "13px",
+                margin: 0,
+              }}
+            >
+              Du kan ændre medlemskab når som helst.
+            </p>
           </div>
 
-          <h2 style={{ textAlign: "center", fontSize: "16px", marginBottom: "22px" }}>
+          <h2
+            style={{
+              textAlign: "center",
+              fontSize: "16px",
+              marginBottom: "22px",
+            }}
+          >
             Personlige oplysninger
           </h2>
 
           <label style={labelStyle}>NAVN</label>
-          <input value={userFirstName} onChange={(e) => setUserFirstName(e.target.value)} style={inputStyle} />
+          <input
+            value={userFirstName}
+            onChange={(e) => setUserFirstName(e.target.value)}
+            style={inputStyle}
+          />
 
           <label style={labelStyle}>EMAIL</label>
-          <input value={userEmail} onChange={(e) => setUserEmail(e.target.value)} style={inputStyle} />
+          <input
+            value={userEmail}
+            onChange={(e) => setUserEmail(e.target.value)}
+            style={inputStyle}
+          />
 
           <label style={labelStyle}>TELEFON</label>
-          <input value={userPhone} onChange={(e) => setUserPhone(e.target.value)} style={inputStyle} />
+          <input
+            value={userPhone}
+            onChange={(e) => setUserPhone(e.target.value)}
+            style={inputStyle}
+          />
 
           <label style={labelStyle}>NUMMERPLADE</label>
           <input
             value={userLicensePlate}
-            onChange={(e) => setUserLicensePlate(e.target.value.toUpperCase())}
+            onChange={(e) =>
+              setUserLicensePlate(e.target.value.toUpperCase())
+            }
             style={inputStyle}
           />
 
-          {message && <p style={{ color: "#67d27d", textAlign: "center" }}>{message}</p>}
-          {error && <p style={{ color: "red", textAlign: "center" }}>{error}</p>}
+          {message && (
+            <p style={{ color: "#67d27d", textAlign: "center" }}>
+              {message}
+            </p>
+          )}
+
+          {error && (
+            <p style={{ color: "red", textAlign: "center" }}>
+              {error}
+            </p>
+          )}
 
           <button onClick={saveProfile} style={greenButtonStyle}>
             Gem ændringer
           </button>
 
+          <h2
+            style={{
+              textAlign: "center",
+              fontSize: "16px",
+              marginBottom: "18px",
+              marginTop: "34px",
+            }}
+          >
+            Betaling
+          </h2>
+
+          <div style={paymentCardStyle}>
+            <span>💳 **** 4242</span>
+            <span style={tagStyle}>STANDARD</span>
+          </div>
+
+          <div style={paymentRowStyle}>
+            ↔ Skift betalingsmetode ›
+          </div>
+
+          <div style={paymentRowStyle}>
+            ↺ Betalingshistorik ›
+          </div>
+
           <button onClick={logout} style={logoutButtonStyle}>
             Log ud
-          </button>
-
-          <button onClick={deleteAccount} style={deleteButtonStyle}>
-            Slet konto
           </button>
         </section>
       </div>
@@ -279,15 +350,6 @@ const inputStyle = {
   fontSize: "14px",
 } as const;
 
-const smallGreenButtonStyle = {
-  background: "#67d27d",
-  color: "white",
-  border: "none",
-  borderRadius: "8px",
-  padding: "13px 18px",
-  fontWeight: 800,
-} as const;
-
 const greenButtonStyle = {
   width: "100%",
   background: "#67d27d",
@@ -297,6 +359,34 @@ const greenButtonStyle = {
   padding: "15px",
   fontWeight: 900,
   marginTop: "20px",
+} as const;
+
+const paymentCardStyle = {
+  border: "1px solid #ddd",
+  borderRadius: "8px",
+  padding: "14px",
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginBottom: "10px",
+} as const;
+
+const paymentRowStyle = {
+  border: "1px solid #eee",
+  borderRadius: "8px",
+  padding: "14px",
+  marginBottom: "10px",
+  color: "#555",
+  fontSize: "14px",
+} as const;
+
+const tagStyle = {
+  background: "#eee",
+  color: "#777",
+  fontSize: "10px",
+  padding: "4px 7px",
+  borderRadius: "4px",
+  fontWeight: 900,
 } as const;
 
 const logoutButtonStyle = {
@@ -309,16 +399,4 @@ const logoutButtonStyle = {
   fontWeight: 900,
   fontSize: "17px",
   marginTop: "24px",
-} as const;
-
-const deleteButtonStyle = {
-  width: "100%",
-  background: "#e04b4b",
-  color: "white",
-  border: "none",
-  borderRadius: "8px",
-  padding: "16px",
-  fontWeight: 900,
-  fontSize: "17px",
-  marginTop: "12px",
 } as const;
