@@ -304,16 +304,14 @@ def verify_account(key):
 
         db, cursor = x.db()
 
-        verified_at = int(time.time())
-
         q = """
             UPDATE users
-            SET user_verified_at = %s
+            SET user_verified_at = NOW()
             WHERE user_verification_key = %s
-            AND user_verified_at = 0
+            AND user_verified_at IS NULL
         """
 
-        cursor.execute(q, (verified_at, key))
+        cursor.execute(q, (key,))
         db.commit()
 
         if cursor.rowcount == 0:
@@ -334,7 +332,6 @@ def verify_account(key):
             cursor.close()
         if "db" in locals():
             db.close()
-
 
 ##############################
 ##############################
@@ -685,18 +682,13 @@ def activity_log():
 
         q = """
             SELECT 
-                wc.wash_type, 
-                wc.subscription_price,
+                wh.wash_type,
+                wh.subscription_price,
                 wl.location_city,
                 wh.washed_at
-            FROM 
-                wash_categories wc
-            JOIN 
-                wash_history wh ON wc.wash_type = wh.wash_category_fk
-            JOIN
-                wash_locations wl ON wh.location_fk = wl.location_pk
-            WHERE 
-                wh.user_fk = %s
+            FROM wash_history wh
+            JOIN wash_locations wl ON wh.location_fk = wl.location_pk
+            WHERE wh.user_fk = %s
             ORDER BY wh.washed_at DESC
         """
 
@@ -714,7 +706,6 @@ def activity_log():
             cursor.close()
         if "db" in locals():
             db.close()
-
 
 ##############################
 @app.get("/api/queue-status")
