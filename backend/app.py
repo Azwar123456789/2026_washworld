@@ -675,5 +675,45 @@ def wash_stats():
 
 
 ##############################
+@app.get("/api/activity-log")
+def activity_log():
+    try:
+        user_pk = "c97a81e4f57f484aa0de5a8ee9c68882"
+        db, cursor = x.db()
+
+        q = """
+            SELECT 
+                wc.wash_type, 
+                wc.subscription_price,
+                wl.location_city,
+                wh.washed_at
+            FROM 
+                wash_categories wc
+            JOIN 
+                wash_history wh ON wc.wash_type = wh.wash_category_fk
+            JOIN
+                wash_locations wl ON wh.location_fk = wl.location_pk
+            WHERE 
+                wh.user_fk = %s
+            ORDER BY wh.washed_at DESC
+        """
+
+        cursor.execute(q, (user_pk,))
+        results = cursor.fetchall()
+
+        return jsonify({"activity_log": results}), 200
+
+    except Exception as ex:
+        ic(ex)
+        return jsonify({"error": str(ex)}), 500
+
+    finally:
+        if "cursor" in locals():
+            cursor.close()
+        if "db" in locals():
+            db.close()
+
+
+##############################
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5001)
