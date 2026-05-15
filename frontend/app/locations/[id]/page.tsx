@@ -1,8 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useLocations } from "../../hooks/useLocations";
+import { useRouter } from "next/navigation";
+import Button from "../../../components/Button";
 
 function createSlug(value: string) {
   return value
@@ -15,15 +16,16 @@ function createSlug(value: string) {
 
 function getCapacity(index: number) {
   const capacities = [
-    { label: "God kapacitet", color: "#67d27d" },
-    { label: "Medium kapacitet", color: "#d8c93f" },
-    { label: "Dårlig kapacitet", color: "#e04b4b" },
+    { label: "God kapacitet", className: "capacity-good" },
+    { label: "Medium kapacitet", className: "capacity-medium" },
+    { label: "Dårlig kapacitet", className: "capacity-bad" },
   ];
 
   return capacities[index % 3];
 }
 
 export default function LocationDetailsPage() {
+  const router = useRouter();
   const params = useParams();
 
   const { filteredLocations, isLoading, error } = useLocations();
@@ -64,125 +66,124 @@ export default function LocationDetailsPage() {
   )}`;
 
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        background: "#efefef",
-        padding: "16px",
-        paddingBottom: "100px",
-      }}
-    >
-      <div style={{ maxWidth: "420px", margin: "0 auto" }}>
-        <Link
-          href="/locations"
-          style={{
-            color: "#67d27d",
-            fontWeight: 700,
-            textDecoration: "none",
-            display: "inline-block",
-            marginBottom: "14px",
-          }}
-        >
-          ← Tilbage
-        </Link>
+    <main className="location-details-page">
+      <div className="location-details-shell">
 
-        <div
-          style={{
-            background: "#000",
-            color: "white",
-            padding: "26px 20px",
-            borderRadius: "18px",
-            marginBottom: "20px",
-          }}
-        >
-          <p
-            style={{
-              margin: "0 0 8px 0",
-              color: capacity.color,
-              fontWeight: 800,
-              fontSize: "14px",
-            }}
-          >
-            ● {capacity.label}
-          </p>
+        <section className="auth-header">
+          <img
+            src="/logo_sort.webp"
+            alt="Wash world logo"
+            className="auth-logo"
+          />
 
-          <h1
-            style={{
-              margin: 0,
-              fontSize: "32px",
-              fontWeight: 800,
-            }}
+          <button
+            type="button"
+            className="auth-back-button"
+            onClick={() => router.push("/locations")}
           >
+            ←
+          </button>
+        </section>
+
+        <section className="location-hero">
+          <p className="location-small-title">STATION</p>
+
+          <h1 className="location-main-title">
             {location.location_name}
           </h1>
 
-          <a
-            href={mapsUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              marginTop: "10px",
-              color: "#bbb",
-              fontSize: "14px",
-              display: "inline-block",
-            }}
-          >
-            📍 {location.location_address}
-          </a>
-        </div>
+          <p>{location.location_address}</p>
 
-        <div
-          style={{
-            background: "white",
-            borderRadius: "16px",
-            padding: "18px",
-            marginBottom: "18px",
-          }}
-        >
-          <h2 style={{ marginTop: 0, marginBottom: "14px", fontSize: "18px" }}>
+          <p className={`location-capacity ${capacity.className}`}>
+            ● {capacity.label}
+          </p>
+        </section>
+
+        <section className="wait-card">
+          <div className="wait-label">VENTETID</div>
+
+          <div className="wait-time">
+            <span className="wait-number">5</span>
+            <span className="wait-min">MIN</span>
+          </div>
+
+          <Button
+            size="lg"
+            onClick={() => window.open(mapsUrl, "_blank")}
+          >
+            Rutevejledning
+          </Button>
+
+        </section>
+
+        <section className="location-description">
+          <h2>{location.location_name}</h2>
+
+          <p>
+            Hos Wash World i Roskildevej tilbyder vi en lynhurtig og
+            effektiv bilvask, der passer ind i din travle hverdag.
+            Vores station på Roskildevej 376 er udstyret med den nyeste
+            teknologi inden for miljørigtig bilpleje.
+          </p>
+
+          <p>
+            {location.location_description}
+          </p>
+
+        </section>
+
+        <section className="location-info-section">
+          <h2 className="location-info-title">
             Information
           </h2>
 
-          <p>
-            <strong>By:</strong> {location.location_city}
-          </p>
+          <div className="location-info-card">
 
-          <p>
-            <strong>Adresse:</strong> {location.location_address}
-          </p>
+            <div className="location-info-row">
+              <div className="location-info-left">
+                <span>🕒</span>
 
-          <p>
-            <strong>Åbningstid:</strong> {location.location_opening_hours}
-          </p>
+                <span className="location-info-label">
+                  Åbningstider
+                </span>
+              </div>
 
-          <p>
-            <strong>Status:</strong>{" "}
-            <span style={{ color: capacity.color, fontWeight: 800 }}>
-              {capacity.label}
-            </span>
-          </p>
-        </div>
+              <span className="location-info-value">
+                {location.location_opening_hours}
+              </span>
+            </div>
 
-        <a
-          href={mapsUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            display: "block",
-            width: "100%",
-            background: "#67d27d",
-            color: "white",
-            textAlign: "center",
-            padding: "16px",
-            borderRadius: "14px",
-            textDecoration: "none",
-            fontWeight: 700,
-            fontSize: "18px",
-            boxSizing: "border-box",
-          }}
-        >
-          Åbn adresse i Maps
-        </a>
+            <div className="location-info-row">
+              <div className="location-info-left">
+                <span>↕</span>
+
+                <span className="location-info-label">
+                  Max Højde
+                </span>
+              </div>
+
+              <span className="location-info-value">
+                2,6 m
+              </span>
+            </div>
+
+            <div className="location-info-row">
+              <div className="location-info-left">
+                <span>↔</span>
+
+                <span className="location-info-label">
+                  Max Bredde
+                </span>
+              </div>
+
+              <span className="location-info-value">
+                2,55 m
+              </span>
+            </div>
+
+          </div>
+        </section>
+
       </div>
     </main>
   );

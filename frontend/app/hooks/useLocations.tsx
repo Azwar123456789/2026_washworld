@@ -13,6 +13,7 @@ export type WashLocation = {
   location_opening_hours: string;
   location_lat?: number | string | null;
   location_lng?: number | string | null;
+  location_description?: string | null;
 };
 
 export function useLocations() {
