@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Button from "../../components/Button";
 
 export default function LoginWelcomePage() {
   const router = useRouter();
@@ -26,21 +27,18 @@ export default function LoginWelcomePage() {
             Scan QR og undgå ventetid
           </p>
 
-          <button
-            type="button"
-            className="login-primary-button"
-            onClick={() => router.push("/login/form")}
-          >
+          <Button size="lg" onClick={() => router.push("/login/form")}>
             Log ind
-          </button>
+          </Button>
 
-          <button
-            type="button"
-            className="login-secondary-button"
+
+          <Button
+            size="lg"
+            variant="secondary"
             onClick={() => router.push("/signup")}
           >
             Bliv medlem
-          </button>
+          </Button>
         </div>
 
       </section>

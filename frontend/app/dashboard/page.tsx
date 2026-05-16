@@ -1,41 +1,55 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import LocationsSection from "./locations_section";
 
-const locations = [
-  {
-    name: "Viby",
-    address: "Gunnar Clausens Vej 2A, 8260 Viby",
-    distance: "14,6 km",
-    image: "/viby.webp",
-  },
-  {
-    name: "Højbjerg",
-    address: "Bodøstrupvej 20E, 8270 Højbjerg",
-    distance: "15,8 km",
-    image: "/højbjerg.webp",
-  },
-  {
-    name: "Tilst",
-    address: "Blomstervej 2T, 8381 Tilst",
-    distance: "21,7 km",
-    image: "/tilst.webp",
-  },
-];
+const queueLevels = ["low", "medium", "high"];
 
-const queueData = [
-  { name: "Viby", text: "1 i kø / 3 minutter", level: "low" },
-  { name: "Højbjerg", text: "3 i kø / 10 minutter", level: "medium" },
-  { name: "Tilst", text: "7 i kø / 35 minutter", level: "high" },
-];
+const getStatusLabel = (status) => {
+  const statusNum = parseInt(status);
+  if (statusNum <= 3) return "Easy";
+  if (statusNum <= 7) return "Normal";
+  return "Busy";
+};
 
 export default function DashboardPage() {
   const router = useRouter();
+  const [allLocations, setAllLocations] = useState([]);
+  const [displayedLocations, setDisplayedLocations] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showAll, setShowAll] = useState(false);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const locationsRes = await fetch("http://localhost:5001/api/locations");
+        const locationsData = await locationsRes.json();
+        setAllLocations(locationsData.locations);
+        setDisplayedLocations(locationsData.locations.slice(0, 3));
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const handleShowMore = () => {
+    setShowAll(true);
+    setDisplayedLocations(allLocations);
+  };
+
+  const handleShowLess = () => {
+    setShowAll(false);
+    setDisplayedLocations(allLocations.slice(0, 3));
+  };
 
   return (
     <main className="dashboard-page">
       <div className="dashboard-shell">
-
         <section className="dashboard-hero">
           <div className="dashboard-hero-top">
             <img
@@ -58,60 +72,13 @@ export default function DashboardPage() {
             <h3>Start vask</h3>
             <p>Scan QR-koden på maskinen for at starte vask</p>
 
-            <button
-              className="qr-button"
-              onClick={() => router.push("/qr")}
-            >
+            <button className="qr-button" onClick={() => router.push("/qr")}>
               Vis QR-kode
             </button>
           </div>
         </section>
 
-        <section className="locations-section">
-          <h3 className="section-title">Find din nærmeste vaskehal</h3>
-
-          {locations.map((location) => (
-            <div key={location.name} className="location-card">
-              <img
-                src={location.image}
-                alt={location.name}
-                className="location-image"
-              />
-
-              <div className="location-info">
-                <h4>{location.name}</h4>
-                <p>{location.address}</p>
-
-                <div className="location-map-row">
-                  <a href="#">Vis på kort</a>
-                </div>
-
-                <p className="location-distance">{location.distance}</p>
-                <a href="#" className="location-more">
-                  Læs mere
-                </a>
-              </div>
-            </div>
-          ))}
-
-          <button className="show-more-button">Vis flere</button>
-        </section>
-
-        <section className="queue-section">
-          <h3 className="section-title">Live kø status</h3>
-
-          {queueData.map((item) => (
-            <div key={item.name} className="queue-row">
-              <div className="queue-name">{item.name}</div>
-              <div className="queue-text">{item.text}</div>
-              <div className="queue-bars">
-                <span className={`queue-bar ${item.level}`}></span>
-                <span className={`queue-bar ${item.level}`}></span>
-                <span className={`queue-bar ${item.level}`}></span>
-              </div>
-            </div>
-          ))}
-        </section>
+        <LocationsSection locations={displayedLocations} loading={loading} showAll={showAll} onShowMore={handleShowMore} onShowLess={handleShowLess} />
       </div>
     </main>
   );
