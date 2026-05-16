@@ -39,97 +39,180 @@ def index():
 @app.post("/api/sign-up")
 def sign_up():
     try:
-        user_first_name = x.validate_user_first_name()
-        user_email = x.validate_email()
-        user_password = x.validate_user_password()
-        user_license_plate = x.validate_license_plate()
+        data = x.get_data()
+
+        user_first_name = x.validate_user_first_name(data.get("user_first_name"))
+        user_email = x.validate_email(data.get("user_email"))
+        user_password = x.validate_user_password(data.get("user_password"))
+        user_license_plate = x.validate_license_plate(data.get("user_license_plate"))
+
+        user_phone = (data.get("user_phone") or "").strip()
+        selected_wash = (data.get("selected_wash") or "").strip()
+        package_name = (data.get("package_name") or "").strip()
+
+        has_all_locations_access = int(data.get("has_all_locations_access") or 0)
+        all_locations_price = 10.00 if has_all_locations_access == 1 else 0.00
+
+        card_number = (data.get("card_number") or "").replace(" ", "").replace("-", "")
+        card_expiry = (data.get("card_expiry") or "").strip()
+        card_name = (data.get("card_name") or "").strip()
+
+        if not selected_wash:
+            return jsonify({"error": "Primary wash location is required"}), 400
+
+        if not package_name:
+            return jsonify({"error": "Subscription package is required"}), 400
+
+        if len(card_number) < 4:
+            return jsonify({"error": "Card number is invalid"}), 400
 
         user_pk = uuid.uuid4().hex
         verification_key = uuid.uuid4().hex
         reset_password_key = uuid.uuid4().hex + uuid.uuid4().hex
-        
-
         password_hash = generate_password_hash(user_password)
 
         db, cursor = x.db()
 
-        q = """
+        cursor.execute("""
+            SELECT location_pk
+            FROM wash_locations
+            WHERE location_city = %s
+               OR location_name LIKE %s
+            LIMIT 1
+        """, (
+            selected_wash,
+            f"%{selected_wash}%"
+        ))
+
+        location = cursor.fetchone()
+
+        if not location:
+            return jsonify({"error": "Selected wash location not found"}), 404
+
+        primary_location_fk = location["location_pk"]
+
+        cursor.execute("""
+            SELECT normal_price, subscription_price
+            FROM wash_categories
+            WHERE wash_type = %s
+            LIMIT 1
+        """, (package_name,))
+
+        category = cursor.fetchone()
+
+        if not category:
+            return jsonify({"error": "Selected subscription package not found"}), 404
+
+        normal_price = category["normal_price"]
+        subscription_price = category["subscription_price"]
+
+        cursor.execute("""
             INSERT INTO users (
                 user_pk,
                 user_first_name,
                 user_email,
                 user_password_hash,
                 user_license_plate,
+                user_phone,
+                primary_location_fk,
+                has_all_locations_access,
                 user_verified_at,
                 user_verification_key,
                 user_reset_password_key,
                 user_created_at
             )
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, NOW())
-        """
-
-        cursor.execute(q, (
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, NULL, %s, %s, NOW())
+        """, (
             user_pk,
             user_first_name,
             user_email,
             password_hash,
             user_license_plate,
-            None,
+            user_phone,
+            primary_location_fk,
+            has_all_locations_access,
             verification_key,
-            reset_password_key,
+            reset_password_key
         ))
 
         subscription_pk = uuid.uuid4().hex
 
-        q_subscription = """
+        cursor.execute("""
             INSERT INTO subscriptions (
                 subscription_pk,
                 user_fk,
                 subscription_name,
+                wash_type,
                 subscription_price,
+                normal_price,
+                all_locations_price,
                 subscription_started_at,
                 subscription_active
             )
-            VALUES (%s, %s, %s, %s, NOW(), %s)
-        """
-
-        cursor.execute(q_subscription, (
+            VALUES (%s, %s, %s, %s, %s, %s, %s, NOW(), 1)
+        """, (
             subscription_pk,
             user_pk,
-            "Premium Wash",
-            179.00,
-            1
+            package_name,
+            package_name,
+            subscription_price,
+            normal_price,
+            all_locations_price
+        ))
+
+        payment_card_pk = uuid.uuid4().hex
+        card_last4 = card_number[-4:]
+
+        cursor.execute("""
+            INSERT INTO payment_cards (
+                payment_card_pk,
+                user_fk,
+                cardholder_name,
+                card_last4,
+                card_expiry,
+                is_default,
+                created_at
+            )
+            VALUES (%s, %s, %s, %s, %s, 1, NOW())
+        """, (
+            payment_card_pk,
+            user_pk,
+            card_name,
+            card_last4,
+            card_expiry
         ))
 
         db.commit()
 
-        html = f"""
-            <h1>Welcome to Wash World</h1>
-            <p>Hi {user_first_name}</p>
-            <p>Thank you for signing up.</p>
-            <p>Click here to verify your account:</p>
-            <a href="http://127.0.0.1:5001/api/verify/{verification_key}">
-                Verify account
-            </a>
-        """
-
-        x.send_email(user_email, "Welcome to Wash World", html)
+        access_token = create_access_token(identity=user_pk)
 
         return jsonify({
-            "message": "User created. Please check your email."
+            "message": "User created",
+            "access_token": access_token,
+            "user": {
+                "user_pk": user_pk,
+                "user_first_name": user_first_name,
+                "user_email": user_email,
+                "user_phone": user_phone,
+                "user_license_plate": user_license_plate,
+                "primary_location_fk": primary_location_fk,
+                "subscription_name": package_name,
+                "subscription_price": float(subscription_price),
+                "card_last4": card_last4
+            }
         }), 201
 
     except Exception as ex:
         ic(ex)
 
         if "company_exception user_first_name" in str(ex):
-            return jsonify({"error": f"Name must be {x.USER_FIRST_NAME_MIN} to {x.USER_FIRST_NAME_MAX} characters"}), 400
+            return jsonify({"error": "Name is invalid"}), 400
 
         if "company_exception email" in str(ex):
             return jsonify({"error": "Invalid email"}), 400
 
         if "company_exception user_password" in str(ex):
-            return jsonify({"error": f"Password must be {x.USER_PASSWORD_MIN} to {x.USER_PASSWORD_MAX} characters"}), 400
+            return jsonify({"error": "Invalid password"}), 400
 
         if "company_exception license_plate" in str(ex):
             return jsonify({"error": "Invalid license plate"}), 400
@@ -219,13 +302,26 @@ def me():
         if request.method == "GET":
             cursor.execute("""
                 SELECT 
-                    user_pk,
-                    user_first_name,
-                    user_email,
-                    user_license_plate,
-                    user_phone
-                FROM users
-                WHERE user_pk = %s
+                    u.user_pk,
+                    u.user_first_name,
+                    u.user_email,
+                    u.user_license_plate,
+                    u.user_phone,
+                    u.primary_location_fk,
+                    wl.location_name,
+                    wl.location_city,
+                    s.subscription_name AS user_membership,
+                    s.subscription_price,
+                    pc.card_last4,
+                    pc.card_expiry
+                FROM users u
+                LEFT JOIN subscriptions s ON u.user_pk = s.user_fk
+                LEFT JOIN wash_locations wl ON u.primary_location_fk = wl.location_pk
+                LEFT JOIN payment_cards pc 
+                    ON u.user_pk = pc.user_fk 
+                    AND pc.is_default = 1
+                WHERE u.user_pk = %s
+                LIMIT 1
             """, (user_pk,))
 
             user = cursor.fetchone()
@@ -242,6 +338,7 @@ def me():
             user_email = x.validate_email(data.get("user_email"))
             user_license_plate = x.validate_license_plate(data.get("user_license_plate"))
             user_phone = (data.get("user_phone") or "").strip()
+            user_membership = (data.get("user_membership") or "").strip()
 
             cursor.execute("""
                 UPDATE users
@@ -259,11 +356,39 @@ def me():
                 user_pk
             ))
 
+            if user_membership:
+                cursor.execute("""
+                    SELECT subscription_price
+                    FROM wash_categories
+                    WHERE wash_type = %s
+                    LIMIT 1
+                """, (user_membership,))
+
+                category = cursor.fetchone()
+
+                if not category:
+                    return jsonify({"error": "Ugyldigt medlemskab"}), 400
+
+                cursor.execute("""
+                    UPDATE subscriptions
+                    SET 
+                        subscription_name = %s,
+                        wash_type = %s,
+                        subscription_price = %s
+                    WHERE user_fk = %s
+                """, (
+                    user_membership,
+                    user_membership,
+                    category["subscription_price"],
+                    user_pk
+                ))
+
             db.commit()
 
             return jsonify({"message": "Profile updated"}), 200
 
         if request.method == "DELETE":
+            cursor.execute("DELETE FROM payment_cards WHERE user_fk = %s", (user_pk,))
             cursor.execute("DELETE FROM password_reset_tokens WHERE user_fk = %s", (user_pk,))
             cursor.execute("DELETE FROM subscriptions WHERE user_fk = %s", (user_pk,))
             cursor.execute("DELETE FROM wash_history WHERE user_fk = %s", (user_pk,))
@@ -610,13 +735,12 @@ def dashboard():
         q_user = """
             SELECT 
                 u.user_first_name,
-                u.user_email,
-                u.user_license_plate,
                 s.subscription_name,
                 s.subscription_price
             FROM users u
             LEFT JOIN subscriptions s ON u.user_pk = s.user_fk
             WHERE u.user_pk = %s
+            LIMIT 1
         """
 
         cursor.execute(q_user, (user_pk,))
@@ -649,7 +773,6 @@ def dashboard():
             cursor.close()
         if "db" in locals():
             db.close()
-
 
 ##############################
 if __name__ == "__main__":

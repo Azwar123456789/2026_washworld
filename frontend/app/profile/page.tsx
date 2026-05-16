@@ -14,20 +14,17 @@ type User = {
   user_license_plate: string;
   user_phone?: string | null;
   user_membership?: string | null;
+  subscription_price?: number | null;
+  location_name?: string | null;
+  card_last4?: string | null;
+  card_expiry?: string | null;
 };
 
 export default function ProfilePage() {
   const router = useRouter();
 
   const [isLoading, setIsLoading] = useState(true);
-
-  const [userFirstName, setUserFirstName] = useState("");
-  const [userEmail, setUserEmail] = useState("");
-  const [userPhone, setUserPhone] = useState("");
-  const [userLicensePlate, setUserLicensePlate] = useState("");
-  const [userMembership, setUserMembership] = useState("Guld");
-
-  const [message, setMessage] = useState("");
+  const [user, setUser] = useState<User | null>(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -49,16 +46,10 @@ export default function ProfilePage() {
         const result = await response.json();
 
         if (!response.ok) {
-          throw new Error(result.error || "Kunne ikke hente bruger");
+          throw new Error(result.error || "Kunne ikke hente profil");
         }
 
-        const user: User = result.user;
-
-        setUserFirstName(user.user_first_name);
-        setUserEmail(user.user_email);
-        setUserPhone(user.user_phone || "");
-        setUserLicensePlate(user.user_license_plate);
-        setUserMembership(user.user_membership || "Guld");
+        setUser(result.user);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Noget gik galt");
       } finally {
@@ -68,40 +59,6 @@ export default function ProfilePage() {
 
     getUser();
   }, [router]);
-
-  async function saveProfile() {
-    try {
-      setMessage("");
-      setError("");
-
-      const token = localStorage.getItem("token");
-
-      const response = await fetch(`${baseUrl}/api/me`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          user_first_name: userFirstName,
-          user_email: userEmail,
-          user_phone: userPhone,
-          user_license_plate: userLicensePlate,
-          user_membership: userMembership,
-        }),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || "Kunne ikke gemme ændringer");
-      }
-
-      setMessage("Ændringer gemt");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Noget gik galt");
-    }
-  }
 
   function logout() {
     localStorage.removeItem("token");
@@ -113,6 +70,18 @@ export default function ProfilePage() {
       <main className="dashboard-page">
         <div className="dashboard-shell">
           <p>Loading...</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (error || !user) {
+    return (
+      <main className="dashboard-page">
+        <div className="dashboard-shell">
+          <p style={{ color: "red", padding: "20px" }}>
+            {error || "Profil kunne ikke hentes"}
+          </p>
         </div>
       </main>
     );
@@ -137,161 +106,64 @@ export default function ProfilePage() {
         </section>
 
         <section style={{ background: "white", padding: "22px 18px" }}>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              marginBottom: "28px",
-            }}
-          >
+          <div style={profileHeaderStyle}>
             <div style={avatarStyle}>
-              {userFirstName.slice(0, 2).toUpperCase()}
+              {user.user_first_name.slice(0, 2).toUpperCase()}
             </div>
 
-            <strong>{userFirstName}</strong>
+            <div>
+              <strong>{user.user_first_name}</strong>
+              <p style={{ margin: 0, color: "#777", fontSize: "13px" }}>
+                {user.user_email}
+              </p>
+            </div>
           </div>
 
-          <h1
-            style={{
-              textAlign: "center",
-              fontSize: "26px",
-              marginBottom: "28px",
-            }}
-          >
-            Min Profil
-          </h1>
+          <h1 style={pageTitleStyle}>Min Profil</h1>
 
           <div style={subscriptionCardStyle}>
-            <h3
-              style={{
-                margin: "0 0 14px",
-                fontSize: "22px",
-                fontWeight: 800,
-              }}
-            >
-              Dit medlemskab
-            </h3>
+            <h3 style={cardTitleStyle}>Dit medlemskab</h3>
 
-            <select
-              value={userMembership}
-              onChange={(e) => setUserMembership(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "16px",
-                borderRadius: "10px",
-                border: "1px solid #ddd",
-                fontSize: "16px",
-                marginBottom: "18px",
-                background: "white",
-              }}
-            >
-              <option value="Guld">Guld</option>
-              <option value="Premium">Premium</option>
-              <option value="Brilliant">Brilliant</option>
-            </select>
-
-            <p
-              style={{
-                color: "#67d27d",
-                fontSize: "12px",
-                fontWeight: 800,
-                marginBottom: "10px",
-              }}
-            >
-              ● AKTIV
+            <p style={membershipNameStyle}>
+              {user.user_membership || "Intet medlemskab"}
             </p>
 
-            <p
-              style={{
-                color: "#777",
-                fontSize: "13px",
-                margin: 0,
-              }}
-            >
-              Du kan ændre medlemskab når som helst.
+            <p style={activeStyle}>● AKTIV</p>
+
+            <p style={mutedTextStyle}>
+              {user.subscription_price
+                ? `${user.subscription_price} kr./md.`
+                : "Pris ikke fundet"}
             </p>
+
+            {user.location_name && (
+              <p style={mutedTextStyle}>
+                Primær vaskehal: {user.location_name}
+              </p>
+            )}
           </div>
 
-          <h2
-            style={{
-              textAlign: "center",
-              fontSize: "16px",
-              marginBottom: "22px",
-            }}
-          >
-            Personlige oplysninger
-          </h2>
+          <h2 style={sectionTitleStyle}>Personlige oplysninger</h2>
 
-          <label style={labelStyle}>NAVN</label>
-          <input
-            value={userFirstName}
-            onChange={(e) => setUserFirstName(e.target.value)}
-            style={inputStyle}
-          />
+          <InfoRow label="Navn" value={user.user_first_name} />
+          <InfoRow label="Email" value={user.user_email} />
+          <InfoRow label="Telefon" value={user.user_phone || "Ikke angivet"} />
+          <InfoRow label="Nummerplade" value={user.user_license_plate} />
 
-          <label style={labelStyle}>EMAIL</label>
-          <input
-            value={userEmail}
-            onChange={(e) => setUserEmail(e.target.value)}
-            style={inputStyle}
-          />
-
-          <label style={labelStyle}>TELEFON</label>
-          <input
-            value={userPhone}
-            onChange={(e) => setUserPhone(e.target.value)}
-            style={inputStyle}
-          />
-
-          <label style={labelStyle}>NUMMERPLADE</label>
-          <input
-            value={userLicensePlate}
-            onChange={(e) =>
-              setUserLicensePlate(e.target.value.toUpperCase())
-            }
-            style={inputStyle}
-          />
-
-          {message && (
-            <p style={{ color: "#67d27d", textAlign: "center" }}>
-              {message}
-            </p>
-          )}
-
-          {error && (
-            <p style={{ color: "red", textAlign: "center" }}>
-              {error}
-            </p>
-          )}
-
-          <button onClick={saveProfile} style={greenButtonStyle}>
-            Gem ændringer
-          </button>
-
-          <h2
-            style={{
-              textAlign: "center",
-              fontSize: "16px",
-              marginBottom: "18px",
-              marginTop: "34px",
-            }}
-          >
-            Betaling
-          </h2>
+          <h2 style={sectionTitleStyle}>Betaling</h2>
 
           <div style={paymentCardStyle}>
-            <span>💳 **** 4242</span>
+            <span>💳 **** {user.card_last4 || "----"}</span>
             <span style={tagStyle}>STANDARD</span>
           </div>
 
           <div style={paymentRowStyle}>
-            ↔ Skift betalingsmetode ›
+            Udløbsdato: {user.card_expiry || "--/--"}
           </div>
 
-          <div style={paymentRowStyle}>
-            ↺ Betalingshistorik ›
-          </div>
+          <div style={paymentRowStyle}>↔ Skift betalingsmetode ›</div>
+
+          <div style={paymentRowStyle}>↺ Betalingshistorik ›</div>
 
           <button onClick={logout} style={logoutButtonStyle}>
             Log ud
@@ -299,6 +171,15 @@ export default function ProfilePage() {
         </section>
       </div>
     </main>
+  );
+}
+
+function InfoRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div style={infoRowStyle}>
+      <span style={infoLabelStyle}>{label}</span>
+      <strong style={infoValueStyle}>{value}</strong>
+    </div>
   );
 }
 
@@ -313,6 +194,13 @@ const backButtonStyle = {
   fontSize: "18px",
 } as const;
 
+const profileHeaderStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: "10px",
+  marginBottom: "28px",
+} as const;
+
 const avatarStyle = {
   width: "42px",
   height: "42px",
@@ -325,40 +213,71 @@ const avatarStyle = {
   justifyContent: "center",
 } as const;
 
+const pageTitleStyle = {
+  textAlign: "center",
+  fontSize: "26px",
+  marginBottom: "28px",
+} as const;
+
 const subscriptionCardStyle = {
   border: "1px solid #e5e5e5",
-  borderRadius: "10px",
+  borderRadius: "12px",
   padding: "22px",
   textAlign: "center",
   marginBottom: "30px",
 } as const;
 
-const labelStyle = {
+const cardTitleStyle = {
+  margin: "0 0 14px",
+  fontSize: "22px",
+  fontWeight: 800,
+} as const;
+
+const membershipNameStyle = {
+  fontSize: "28px",
+  fontWeight: 900,
+  margin: "0 0 10px",
+} as const;
+
+const activeStyle = {
+  color: "#67d27d",
+  fontSize: "12px",
+  fontWeight: 900,
+  marginBottom: "10px",
+} as const;
+
+const mutedTextStyle = {
+  color: "#777",
+  fontSize: "13px",
+  margin: "6px 0",
+} as const;
+
+const sectionTitleStyle = {
+  textAlign: "center",
+  fontSize: "16px",
+  marginBottom: "18px",
+  marginTop: "30px",
+} as const;
+
+const infoRowStyle = {
+  border: "1px solid #eee",
+  borderRadius: "10px",
+  padding: "14px",
+  marginBottom: "10px",
+} as const;
+
+const infoLabelStyle = {
   display: "block",
-  fontSize: "10px",
   color: "#999",
+  fontSize: "10px",
   fontWeight: 900,
-  margin: "14px 0 6px",
+  textTransform: "uppercase",
+  marginBottom: "5px",
 } as const;
 
-const inputStyle = {
-  width: "100%",
-  boxSizing: "border-box",
-  border: "1px solid #ddd",
-  borderRadius: "8px",
-  padding: "13px",
-  fontSize: "14px",
-} as const;
-
-const greenButtonStyle = {
-  width: "100%",
-  background: "#67d27d",
-  color: "white",
-  border: "none",
-  borderRadius: "8px",
-  padding: "15px",
-  fontWeight: 900,
-  marginTop: "20px",
+const infoValueStyle = {
+  fontSize: "15px",
+  color: "#111",
 } as const;
 
 const paymentCardStyle = {

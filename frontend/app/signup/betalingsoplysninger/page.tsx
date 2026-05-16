@@ -3,6 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+const baseUrl =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+
 export default function PaymentInformationPage() {
   const router = useRouter();
 
@@ -11,20 +14,59 @@ export default function PaymentInformationPage() {
   const [cardCvc, setCardCvc] = useState("");
   const [cardName, setCardName] = useState("");
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    localStorage.setItem(
-      "payment_information",
-      JSON.stringify({
-        card_number: cardNumber,
-        card_expiry: cardExpiry,
-        card_cvc: cardCvc,
-        card_name: cardName,
-      })
-    );
+    try {
+      const signupInformation = JSON.parse(
+        localStorage.getItem("signup_information") || "{}"
+      );
 
-    router.push("/dashboard");
+      const selectedSubscription = JSON.parse(
+        localStorage.getItem("selected_subscription") || "{}"
+      );
+
+      const response = await fetch(`${baseUrl}/api/sign-up`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_first_name: signupInformation.user_first_name,
+          user_email: signupInformation.user_email,
+          user_password: signupInformation.user_password,
+          user_phone: signupInformation.user_phone,
+          user_license_plate: signupInformation.user_license_plate,
+          selected_wash: signupInformation.selected_wash,
+
+          package_name: selectedSubscription.package_name,
+          subscription_price: selectedSubscription.price,
+
+          card_number: cardNumber,
+          card_expiry: cardExpiry,
+          card_name: cardName,
+
+          has_all_locations_access: 0,
+          extra_location_access_price: 0,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Kunne ikke oprette bruger");
+      }
+
+      localStorage.setItem("token", result.access_token);
+
+      localStorage.removeItem("signup_information");
+      localStorage.removeItem("selected_subscription");
+      localStorage.removeItem("payment_information");
+
+      router.push("/dashboard");
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Noget gik galt");
+    }
   }
 
   return (
@@ -42,7 +84,11 @@ export default function PaymentInformationPage() {
               ←
             </button>
 
-            <img src="/logo_sort.webp" alt="Wash World" className="signup-logo payment-logo" />
+            <img
+              src="/logo_sort.webp"
+              alt="Wash World"
+              className="signup-logo payment-logo"
+            />
           </div>
 
           <div className="signup-content payment-content">
@@ -81,7 +127,7 @@ export default function PaymentInformationPage() {
                   <label>Sikkerhedskode</label>
                   <input
                     type="text"
-                    placeholder="xx - xx"
+                    placeholder="xxx"
                     value={cardCvc}
                     onChange={(e) => setCardCvc(e.target.value)}
                     required
