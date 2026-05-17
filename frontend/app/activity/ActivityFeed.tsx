@@ -119,7 +119,7 @@ export default function ActivityFeed() {
 
   return (
     <section className="activity-content">
-      <h2 className="section-title">Aktivitet</h2>
+      <h1 className="section-title">Aktivitet</h1>
       <div ref={chartRef} id="activity-chart"></div>
 
       <div className="stats-section">

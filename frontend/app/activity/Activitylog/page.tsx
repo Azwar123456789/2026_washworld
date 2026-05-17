@@ -13,7 +13,7 @@ export default function ActivityLogPage() {
       try {
         const response = await fetch("http://localhost:5001/api/activity-log");
         const data = await response.json();
-        
+
         if (data.activity_log) {
           const formattedWashes = data.activity_log.map((wash) => {
             const date = new Date(wash.washed_at * 1000);
@@ -26,13 +26,16 @@ export default function ActivityLogPage() {
                 month: "short",
                 day: "2-digit",
                 hour: "2-digit",
-                minute: "2-digit"
-              })
+                minute: "2-digit",
+              }),
             };
           });
           setRecentWashes(formattedWashes);
-          
-          const total = data.activity_log.reduce((sum, wash) => sum + wash.subscription_price, 0);
+
+          const total = data.activity_log.reduce(
+            (sum, wash) => sum + wash.subscription_price,
+            0,
+          );
           setTotalWashPrice(total);
         }
       } catch (error) {
@@ -66,11 +69,11 @@ export default function ActivityLogPage() {
         </section>
 
         <section className="activity-section">
-          <h2 className="section-title">
+          <h1 className="section-title">
             <Link href="/activity" className="activity-log-link">
               ← Seneste vaske
             </Link>
-          </h2>
+          </h1>
 
           <div className="activity-list">
             {recentWashes.map((wash) => (
