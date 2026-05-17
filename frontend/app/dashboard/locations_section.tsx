@@ -1,3 +1,14 @@
+import Link from "next/link";
+
+function createSlug(value: string) {
+  return value
+    .toLowerCase()
+    .replaceAll("æ", "ae")
+    .replaceAll("ø", "oe")
+    .replaceAll("å", "aa")
+    .replaceAll(" ", "-");
+}
+
 const getStatusLabel = (status) => {
   const statusNum = parseInt(status);
   if (statusNum <= 3) return "Ingen ventetid";
@@ -49,9 +60,9 @@ export default function LocationsSection({
                 </div>
               </div>
 
-              <a href="#" className="location-more">
+              <Link href={`/locations/${createSlug(location.location_city)}`} className="location-more">
                 Læs mere
-              </a>
+              </Link>
             </div>
           </div>
         ))
