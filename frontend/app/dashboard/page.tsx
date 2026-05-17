@@ -25,8 +25,15 @@ export default function DashboardPage() {
       try {
         const locationsRes = await fetch("http://localhost:5001/api/locations");
         const locationsData = await locationsRes.json();
-        setAllLocations(locationsData.locations);
-        setDisplayedLocations(locationsData.locations.slice(0, 3));
+        console.log("API Response:", locationsData);
+        
+        if (locationsData.error) {
+          console.error("API Error:", locationsData.error);
+          setAllLocations([]);
+        } else {
+          setAllLocations(locationsData.locations || []);
+          setDisplayedLocations((locationsData.locations || []).slice(0, 3));
+        }
       } catch (error) {
         console.error("Failed to fetch data:", error);
       } finally {

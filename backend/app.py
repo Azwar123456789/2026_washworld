@@ -4,6 +4,7 @@ from flask import request
 import uuid
 import time
 from datetime import datetime
+from decimal import Decimal
 
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -593,7 +594,16 @@ def reset_password():
 @app.get("/api/locations")
 def get_locations():
     try:
+        user_pk = "4c09d519ef384481af1f452be49bd2b3"
         db, cursor = x.db()
+
+        cursor.execute("""
+            SELECT location_lat, location_lng
+            FROM users u
+            JOIN wash_locations wl ON u.primary_location_fk = wl.location_pk
+            WHERE u.user_pk = %s
+        """, (user_pk,))
+        user_location = cursor.fetchone()
 
         q = """
             SELECT 
@@ -605,11 +615,22 @@ def get_locations():
                 location_lat,
                 location_lng
             FROM wash_locations
-            ORDER BY location_city
         """
 
         cursor.execute(q)
         locations = cursor.fetchall()
+
+        if user_location:
+            user_lat = float(user_location["location_lat"])
+            user_lng = float(user_location["location_lng"])
+            for loc in locations:
+                lat_diff = (float(loc["location_lat"]) - user_lat) * 111
+                lng_diff = (float(loc["location_lng"]) - user_lng) * 111 * 0.7
+                loc["distance"] = (lat_diff**2 + lng_diff**2)**0.5
+            locations.sort(key=lambda x: x["distance"])
+        else:
+            for loc in locations:
+                loc["distance"] = None
 
         return jsonify({"locations": locations}), 200
 
