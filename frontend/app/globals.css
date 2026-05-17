@@ -3,7 +3,6 @@ body {
   font-family: Arial, sans-serif;
   background: white;
   color: #111827;
-
 }
 
 /* NAVBAR */
@@ -178,7 +177,7 @@ body {
 
 .dashboard-page {
   min-height: 100vh;
-  background:#efefef;
+  background: #efefef;
   padding: 16px 12px 110px;
 }
 
@@ -438,15 +437,13 @@ body {
 }
 
 .section-title {
-  /* text-align: center; */
-  margin: 0 0 18px 20px;
   font-size: 18px;
   font-weight: 800;
-  text-align: center;
+  padding: 20px;
 }
 
 .stats-section {
-  margin-top: 22px;
+  margin: 25px 0 25px 0;
   background: #ffffff;
   padding: 16px;
   border-radius: 18px;
@@ -1358,7 +1355,7 @@ body {
 
 .wait-card {
   background: #f4f4f4;
-  border: 1px solid #85878B;
+  border: 1px solid #85878b;
   border-radius: 16px;
   padding: 30px 24px;
   margin: 0 20px 40px;
@@ -1452,5 +1449,4 @@ body {
 
 .location-info-value {
   font-size: 15px;
-  
 }
