@@ -44,7 +44,7 @@ export default function LocationsSection({
               <p>{location.location_address}</p>
 
               <div className="location-map-row">
-                <a href="#">📍Vis på kort</a>
+                <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location.location_address)}`} target="_blank" rel="noopener noreferrer">📍Vis på kort</a>
               </div>
 
               <div className="location-queue-badge">
