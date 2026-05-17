@@ -53,19 +53,8 @@ export default function ActivityLogPage() {
       <div className="dashboard-shell">
         <h1 className="dashboard-top-title">Aktiviteter</h1>
 
-        <section className="dashboard-hero">
-          <div className="dashboard-hero-top">
-            <img
-              src="/images/washworld-logo.png"
-              alt="Wash World"
-              className="dashboard-logo"
-            />
-          </div>
-
-          <h2 className="dashboard-greeting">Hej, Jonas</h2>
-          <p className="dashboard-subtitle">
-            Se dine seneste vask og besparelser
-          </p>
+        <section className="auth-header">
+          <img src="/logo_sort.webp" alt="Wash World" className="auth-logo" />
         </section>
 
         <section className="activity-section">

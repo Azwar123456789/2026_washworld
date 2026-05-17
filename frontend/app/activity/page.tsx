@@ -9,7 +9,7 @@ export default function ActivityPage() {
         <h1 className="dashboard-top-title">Aktivitet</h1>
 
         <section className="auth-header">
-          <img src="logo_sort.webp" alt="Wash World" className="auth-logo" />
+          <img src="/logo_sort.webp" alt="Wash World" className="auth-logo" />
         </section>
 
         <ActivityFeed />
