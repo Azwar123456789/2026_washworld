@@ -1,11 +1,18 @@
 const getStatusLabel = (status) => {
   const statusNum = parseInt(status);
-  if (statusNum <= 3) return "Easy";
-  if (statusNum <= 7) return "Normal";
-  return "Busy";
+  if (statusNum <= 3) return "Ingen ventetid";
+  if (statusNum <= 7) return "Normal ventetid";
+  if (isNaN(statusNum)) return "no data";
+  return "Lang ventetid";
 };
 
-export default function LocationsSection({ locations, loading, showAll, onShowMore, onShowLess }) {
+export default function LocationsSection({
+  locations,
+  loading,
+  showAll,
+  onShowMore,
+  onShowLess,
+}) {
   return (
     <section className="locations-section">
       <h3 className="section-title">Find din nærmeste vaskehal</h3>
@@ -36,7 +43,9 @@ export default function LocationsSection({ locations, loading, showAll, onShowMo
                 </div>
                 <div className="queue-badge-item">
                   <span className="queue-label">Status</span>
-                  <span className="queue-value">{getStatusLabel(location.que_status)}</span>
+                  <span className="queue-value">
+                    {getStatusLabel(location.que_status)}
+                  </span>
                 </div>
               </div>
 
@@ -50,8 +59,16 @@ export default function LocationsSection({ locations, loading, showAll, onShowMo
         <p>Loading locations...</p>
       )}
 
-      {!showAll && <button className="show-more-button" onClick={onShowMore}>Vis flere</button>}
-      {showAll && <button className="show-more-button" onClick={onShowLess}>Vis mindre</button>}
+      {!showAll && (
+        <button className="show-more-button" onClick={onShowMore}>
+          Vis flere
+        </button>
+      )}
+      {showAll && (
+        <button className="show-more-button" onClick={onShowLess}>
+          Vis mindre
+        </button>
+      )}
     </section>
   );
 }
