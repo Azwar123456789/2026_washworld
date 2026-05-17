@@ -120,13 +120,6 @@ export default function LocationDetailsPage() {
           <h2>{location.location_name}</h2>
 
           <p>
-            Hos Wash World i Roskildevej tilbyder vi en lynhurtig og
-            effektiv bilvask, der passer ind i din travle hverdag.
-            Vores station på Roskildevej 376 er udstyret med den nyeste
-            teknologi inden for miljørigtig bilpleje.
-          </p>
-
-          <p>
             {location.location_description}
           </p>
 

@@ -603,7 +603,8 @@ def get_locations():
                 location_address,
                 location_opening_hours,
                 location_lat,
-                location_lng
+                location_lng,
+                location_description
             FROM wash_locations
             ORDER BY location_city
         """
