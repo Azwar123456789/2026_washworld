@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function ActivityLogPage() {
+  const router = useRouter();
   const [recentWashes, setRecentWashes] = useState([]);
   const [totalWashPrice, setTotalWashPrice] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -54,15 +56,18 @@ export default function ActivityLogPage() {
         <h1 className="dashboard-top-title">Aktiviteter</h1>
 
         <section className="auth-header">
+          <button
+            type="button"
+            className="auth-back-button"
+            onClick={() => router.push("/activity")}
+          >
+            ←
+          </button>
           <img src="/logo_sort.webp" alt="Wash World" className="auth-logo" />
         </section>
 
         <section className="activity-section">
-          <h1 className="section-title">
-            <Link href="/activity" className="activity-log-link">
-              ← Seneste vaske
-            </Link>
-          </h1>
+          <h1 className="section-title">Seneste vaske</h1>
 
           <div className="activity-list">
             {recentWashes.map((wash) => (
