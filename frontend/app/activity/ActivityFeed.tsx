@@ -3,7 +3,7 @@
 
 https: "use client";
 
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import ApexCharts from "apexcharts";
 
@@ -40,18 +40,18 @@ const baseOptions = {
   colors: ["#42BC69"],
   xaxis: {
     categories: [
-      "JAN",
-      "FEB",
-      "MAR",
-      "APR",
-      "MAY",
-      "JUN",
-      "JUL",
-      "AUG",
-      "SEPT",
-      "OCT",
-      "NOV",
       "DEC",
+      "NOV",
+      "OCT",
+      "SEPT",
+      "AUG",
+      "JUL",
+      "JUN",
+      "MAY",
+      "APR",
+      "MAR",
+      "FEB",
+      "JAN",
     ],
     labels: {
       style: {
@@ -70,8 +70,11 @@ const baseOptions = {
 };
 
 export default function ActivityFeed() {
+  const router = useRouter();
   const chartRef = useRef<HTMLDivElement | null>(null);
-  const [washData, setWashData] = useState<number[]>([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+  const [washData, setWashData] = useState<number[]>([
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  ]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -116,11 +119,7 @@ export default function ActivityFeed() {
 
   return (
     <section className="activity-content">
-      <h2 className="section-title">
-        <Link href="/activity/Activitylog" className="activity-log-link">
-          Aktivitet 🡲
-        </Link>
-      </h2>
+      <h1 className="section-title">Aktivitet</h1>
       <div ref={chartRef} id="activity-chart"></div>
 
       <div className="stats-section">
@@ -138,6 +137,13 @@ export default function ActivityFeed() {
           </div>
         </div>
       </div>
+
+      <button
+        className="show-more-button"
+        onClick={() => router.push("/activity/Activitylog")}
+      >
+        Vis mere
+      </button>
     </section>
   );
 }
