@@ -30,7 +30,13 @@ export function useLocations() {
         setIsLoading(true);
         setError("");
 
-        const response = await fetch(`${baseUrl}/api/locations`);
+        const token = localStorage.getItem("token");
+        const headers: HeadersInit = {};
+        if (token) {
+          headers.Authorization = `Bearer ${token}`;
+        }
+
+        const response = await fetch(`${baseUrl}/api/locations`, { headers });
         const result = await response.json();
 
         if (!response.ok) {

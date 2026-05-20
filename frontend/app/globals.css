@@ -52,6 +52,11 @@ body {
   font-weight: bold;
 }
 
+.form button:hover,
+.buttons a:hover {
+  cursor: pointer;
+}
+
 .buttons {
   display: flex;
   gap: 12px;
@@ -160,6 +165,10 @@ body {
   margin-top: 8px;
 }
 
+.login-primary-button:hover {
+  cursor: pointer;
+}
+
 .login-secondary-button {
   width: 100%;
   padding: 18px;
@@ -171,6 +180,10 @@ body {
   font-weight: 800;
   cursor: pointer;
   margin-top: 28px;
+}
+
+.login-secondary-button:hover {
+  cursor: pointer;
 }
 
 /* ===== DASHBOARD / LOGGED-IN HOME ===== */
@@ -429,6 +442,10 @@ body {
   font-size: 14px;
 }
 
+.qr-button:hover {
+  cursor: pointer;
+}
+
 .locations-section,
 .queue-section {
   background: #ffffff;
@@ -593,6 +610,10 @@ body {
   cursor: pointer;
 }
 
+.show-more-button:hover {
+  cursor: pointer;
+}
+
 .queue-row {
   display: grid;
   grid-template-columns: 80px 1fr 95px;
@@ -754,6 +775,10 @@ body {
   padding: 0;
 }
 
+.auth-back-button:hover {
+  cursor: pointer;
+}
+
 .auth-content {
   padding: 38px 42px 70px;
   text-align: center;
@@ -820,6 +845,10 @@ body {
   cursor: pointer;
 }
 
+.auth-forgot-link:hover {
+  cursor: pointer;
+}
+
 .auth-submit-button {
   width: 190px;
   height: 72px;
@@ -830,6 +859,10 @@ body {
   color: white;
   font-size: 24px;
   font-weight: 800;
+  cursor: pointer;
+}
+
+.auth-submit-button:hover:not(:disabled) {
   cursor: pointer;
 }
 
@@ -962,6 +995,10 @@ body {
   justify-content: center;
 }
 
+.signup-back-button:hover {
+  cursor: pointer;
+}
+
 .signup-content {
   padding: 38px 36px 70px;
 }
@@ -986,6 +1023,10 @@ body {
   text-decoration: underline;
   font-weight: 800;
   padding: 0;
+}
+
+.signup-login-text button:hover {
+  cursor: pointer;
 }
 
 .signup-form {
@@ -1053,6 +1094,10 @@ body {
   cursor: pointer;
 }
 
+.signup-main-button:hover {
+  cursor: pointer;
+}
+
 .package-list {
   display: flex;
   flex-direction: column;
@@ -1102,6 +1147,10 @@ body {
   font-weight: 900;
   padding: 13px 18px;
   margin-top: 12px;
+}
+
+.package-card button:hover {
+  cursor: pointer;
 }
 
 .popular-badge {
