@@ -867,5 +867,53 @@ def get_wash_history_detailed():
             db.close()
 
 ##############################
+@app.get("/api/activity-log")
+@jwt_required()
+def get_activity_log():
+    try:
+        user_pk = get_jwt_identity()
+
+        db, cursor = x.db()
+
+        q = """
+            SELECT
+                wl.location_city,
+                wh.wash_type,
+                wh.subscription_price,
+                wh.washed_at
+            FROM wash_history wh
+            JOIN wash_locations wl ON wh.location_fk = wl.location_pk
+            WHERE wh.user_fk = %s
+            ORDER BY wh.washed_at DESC
+        """
+
+        cursor.execute(q, (user_pk,))
+        history = cursor.fetchall()
+
+        activity_log = []
+        total_spent = 0
+        for wash in history:
+            price = float(wash["subscription_price"])
+            activity_log.append({
+                "location_city": wash["location_city"],
+                "wash_type": wash["wash_type"],
+                "subscription_price": price,
+                "washed_at": int(wash["washed_at"])
+            })
+            total_spent += price
+
+        return jsonify({"activity_log": activity_log, "total_spent": total_spent}), 200
+
+    except Exception as ex:
+        ic(ex)
+        return jsonify({"error": str(ex)}), 500
+
+    finally:
+        if "cursor" in locals():
+            cursor.close()
+        if "db" in locals():
+            db.close()
+
+##############################
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5001)

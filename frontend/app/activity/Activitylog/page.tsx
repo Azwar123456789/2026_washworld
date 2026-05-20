@@ -9,11 +9,35 @@ export default function ActivityLogPage() {
   const [recentWashes, setRecentWashes] = useState([]);
   const [totalWashPrice, setTotalWashPrice] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+
     const fetchActivityLog = async () => {
       try {
-        const response = await fetch("http://localhost:5001/api/activity-log");
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+          console.error("No token found");
+          router.push("/login");
+          return;
+        }
+
+        const response = await fetch("http://localhost:5001/api/activity-log", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Activity log fetch failed: ${response.status}`);
+        }
+
         const data = await response.json();
 
         if (data.activity_log) {
@@ -33,12 +57,7 @@ export default function ActivityLogPage() {
             };
           });
           setRecentWashes(formattedWashes);
-
-          const total = data.activity_log.reduce(
-            (sum, wash) => sum + wash.subscription_price,
-            0,
-          );
-          setTotalWashPrice(total);
+          setTotalWashPrice(data.total_spent);
         }
       } catch (error) {
         console.error("Error fetching activity log:", error);
@@ -48,7 +67,11 @@ export default function ActivityLogPage() {
     };
 
     fetchActivityLog();
-  }, []);
+  }, [mounted, router]);
+
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <main className="dashboard-page">
