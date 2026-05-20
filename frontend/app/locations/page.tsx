@@ -109,7 +109,7 @@ export default function LocationsPage() {
 
   let displayedLocations = [...filteredLocations];
 
-  if (activeFilter === "Easy") {
+  if (activeFilter === "Ingen ventetid") {
     displayedLocations = displayedLocations.filter(
       (location) => getQueueStatus(location.que_status).label === "Easy"
     );
@@ -213,7 +213,7 @@ export default function LocationsPage() {
             marginBottom: "18px",
           }}
         >
-          {["Easy", "Åben", "Afstand"].map((filter) => (
+          {["Ingen ventetid", "Åben", "Afstand"].map((filter) => (
             <button
               key={filter}
               onClick={() =>
