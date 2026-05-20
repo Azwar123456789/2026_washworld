@@ -592,9 +592,10 @@ def reset_password():
 
 ##############################
 @app.get("/api/locations")
+@jwt_required()
 def get_locations():
     try:
-        user_pk = "4c09d519ef384481af1f452be49bd2b3"
+        user_pk = get_jwt_identity()
         db, cursor = x.db()
 
         cursor.execute("""

@@ -20,23 +20,50 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [showAll, setShowAll] = useState(false);
   const [userName, setUserName] = useState("");
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+
     const fetchData = async () => {
       try {
         const token = localStorage.getItem("token");
         
+        if (!token) {
+          console.error("No token found");
+          router.push("/login");
+          return;
+        }
+
         const dashboardRes = await fetch("http://localhost:5001/api/dashboard", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
+        
+        if (!dashboardRes.ok) {
+          throw new Error(`Dashboard fetch failed: ${dashboardRes.status}`);
+        }
+        
         const dashboardData = await dashboardRes.json();
         if (dashboardData.user?.user_first_name) {
           setUserName(dashboardData.user.user_first_name);
         }
 
-        const locationsRes = await fetch("http://localhost:5001/api/locations");
+        const locationsRes = await fetch("http://localhost:5001/api/locations", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        
+        if (!locationsRes.ok) {
+          throw new Error(`Locations fetch failed: ${locationsRes.status}`);
+        }
+        
         const locationsData = await locationsRes.json();
         console.log("API Response:", locationsData);
         
@@ -44,8 +71,14 @@ export default function DashboardPage() {
           console.error("API Error:", locationsData.error);
           setAllLocations([]);
         } else {
-          setAllLocations(locationsData.locations || []);
-          setDisplayedLocations((locationsData.locations || []).slice(0, 3));
+          const sortedLocations = locationsData.locations || [];
+          sortedLocations.sort((a, b) => {
+            const distA = a.distance !== null ? a.distance : Infinity;
+            const distB = b.distance !== null ? b.distance : Infinity;
+            return distA - distB;
+          });
+          setAllLocations(sortedLocations);
+          setDisplayedLocations(sortedLocations.slice(0, 3));
         }
       } catch (error) {
         console.error("Failed to fetch data:", error);
@@ -55,7 +88,7 @@ export default function DashboardPage() {
     };
 
     fetchData();
-  }, []);
+  }, [mounted, router]);
 
   const handleShowMore = () => {
     setShowAll(true);
@@ -66,6 +99,10 @@ export default function DashboardPage() {
     setShowAll(false);
     setDisplayedLocations(allLocations.slice(0, 3));
   };
+
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <main className="dashboard-page">
