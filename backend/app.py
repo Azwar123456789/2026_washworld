@@ -494,15 +494,6 @@ def forgot_password():
             created_at
         ))
 
-        cursor.execute("""
-            UPDATE users 
-            SET user_reset_password_key = %s 
-            WHERE user_pk = %s
-        """, (
-            reset_key,
-            user["user_pk"]
-        ))
-
         db.commit()
 
         html = f"""
@@ -570,8 +561,7 @@ def reset_password():
 
         cursor.execute("""
             UPDATE users 
-            SET user_password_hash = %s,
-                user_reset_password_key = ''
+            SET user_password_hash = %s
             WHERE user_pk = %s
         """, (password_hash, row["user_fk"]))
 
