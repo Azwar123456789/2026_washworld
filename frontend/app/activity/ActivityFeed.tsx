@@ -1,7 +1,7 @@
 //NPM INSTALLATION
 //apexcharts.com/docs/installation/
 
-https: "use client";
+"use client";
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -80,13 +80,25 @@ export default function ActivityFeed() {
   useEffect(() => {
     const fetchWashData = async () => {
       try {
-        const token = localStorage.getItem("access_token");
+        const token = localStorage.getItem("token");
+        if (!token) {
+          router.push("/login");
+          return;
+        }
         const response = await fetch("http://localhost:5001/api/dashboard", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        const data = await response.json();
-        if (data.monthly_washes) {
-          setWashData(data.monthly_washes);
+        if (response.status === 401) {
+          router.push("/login");
+          return;
+        }
+        if (response.ok) {
+          const data = await response.json();
+          if (data.monthly_washes) {
+            setWashData(data.monthly_washes);
+          }
+        } else {
+          console.error("Dashboard error:", response.status, await response.text());
         }
       } catch (error) {
         console.error("Failed to fetch wash data:", error);
@@ -96,7 +108,7 @@ export default function ActivityFeed() {
     };
 
     fetchWashData();
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     if (!chartRef.current || loading) return;

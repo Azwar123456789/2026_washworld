@@ -541,7 +541,7 @@ def forgot_password():
 @app.post("/api/reset-password")
 def reset_password():
     try:
-        data = x.get_data()  # får JSON eller form data
+        data = x.get_data()
 
         reset_key = x.validate_uuid4_paranoia(data.get("reset_key", ""))
         password = x.validate_user_password(data.get("password", ""))
@@ -554,7 +554,6 @@ def reset_password():
 
         db, cursor = x.db()
 
-        # Tjek reset key
         cursor.execute("""
             SELECT user_fk FROM password_reset_tokens
             WHERE reset_key=%s AND used_at=0
@@ -564,13 +563,11 @@ def reset_password():
         if not row:
             return jsonify({"error": "Invalid or used reset key"}), 400
 
-        # Opdater user password
         cursor.execute("""
             UPDATE users SET user_password_hash=%s
             WHERE user_pk=%s
         """, (password_hash, row["user_fk"]))
 
-        # Marker token som brugt
         cursor.execute("""
             UPDATE password_reset_tokens SET used_at=%s
             WHERE reset_key=%s
@@ -582,7 +579,6 @@ def reset_password():
 
     except Exception as ex:
         ic(ex)
-        # Specific error handling kan tilføjes her, hvis ønsket
         return jsonify({"error": str(ex)}), 500
 
     finally:
@@ -782,9 +778,38 @@ def dashboard():
         cursor.execute(q_stats, (user_pk,))
         stats = cursor.fetchone()
 
+        q_monthly = """
+            SELECT 
+                MONTH(FROM_UNIXTIME(washed_at)) AS month,
+                YEAR(FROM_UNIXTIME(washed_at)) AS year,
+                COUNT(*) AS count
+            FROM wash_history
+            WHERE user_fk = %s
+            AND washed_at >= UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL 12 MONTH))
+            GROUP BY YEAR(FROM_UNIXTIME(washed_at)), MONTH(FROM_UNIXTIME(washed_at))
+            ORDER BY year DESC, month DESC
+        """
+
+        cursor.execute(q_monthly, (user_pk,))
+        monthly_data = cursor.fetchall()
+
+        monthly_washes = [0] * 12
+        current_month = datetime.now().month
+        current_year = datetime.now().year
+        
+        for row in monthly_data:
+            month = row["month"]
+            year = row["year"]
+            count = row["count"]
+            
+            months_back = ((current_year - year) * 12) + (current_month - month)
+            if 0 <= months_back < 12:
+                monthly_washes[11 - months_back] = count
+
         return jsonify({
             "user": user,
-            "stats": stats
+            "stats": stats,
+            "monthly_washes": monthly_washes
         }), 200
 
     except Exception as ex:
