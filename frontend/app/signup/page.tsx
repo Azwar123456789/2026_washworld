@@ -65,7 +65,7 @@ export default function SignUpPage() {
               <label>Fulde navn</label>
               <input
                 type="text"
-                placeholder="User Test"
+                placeholder="Indtast navn"
                 value={userFirstName}
                 onChange={(e) => setUserFirstName(e.target.value)}
                 required
@@ -74,7 +74,7 @@ export default function SignUpPage() {
               <label>E-mail</label>
               <input
                 type="email"
-                placeholder="user@gmail.com"
+                placeholder="Indtast email"
                 value={userEmail}
                 onChange={(e) => setUserEmail(e.target.value)}
                 required
@@ -92,7 +92,7 @@ export default function SignUpPage() {
               <label>Mobilnr.</label>
               <input
                 type="text"
-                placeholder="+45 12 35 54 22"
+                placeholder="Indtast Mobil nr"
                 value={userPhone}
                 onChange={(e) => setUserPhone(e.target.value)}
               />
@@ -100,7 +100,7 @@ export default function SignUpPage() {
               <label>Nummerplade</label>
               <input
                 type="text"
-                placeholder="ABC1234"
+                placeholder="Indtast Nummerplade"
                 value={userLicensePlate}
                 onChange={(e) => setUserLicensePlate(e.target.value)}
                 required

@@ -249,6 +249,7 @@ def login():
                 user_verified_at
             FROM users
             WHERE user_email = %s
+            AND user_is_active = 1
         """
 
         cursor.execute(q, (user_email,))
@@ -389,15 +390,10 @@ def me():
             return jsonify({"message": "Profile updated"}), 200
 
         if request.method == "DELETE":
-            cursor.execute("DELETE FROM payment_cards WHERE user_fk = %s", (user_pk,))
-            cursor.execute("DELETE FROM password_reset_tokens WHERE user_fk = %s", (user_pk,))
-            cursor.execute("DELETE FROM subscriptions WHERE user_fk = %s", (user_pk,))
-            cursor.execute("DELETE FROM wash_history WHERE user_fk = %s", (user_pk,))
-            cursor.execute("DELETE FROM users WHERE user_pk = %s", (user_pk,))
-
+            cursor.execute("""UPDATE users SET user_is_active = 0 WHERE user_pk = %s""", (user_pk,))
             db.commit()
 
-            return jsonify({"message": "Account deleted"}), 200
+            return jsonify({"message": "Account deactivated"}), 200
 
     except Exception as ex:
         ic(ex)
@@ -550,27 +546,39 @@ def reset_password():
         if password != confirm_password:
             return jsonify({"error": "Passwords do not match"}), 400
 
-        password_hash = generate_password_hash(password)
-
         db, cursor = x.db()
 
         cursor.execute("""
-            SELECT user_fk FROM password_reset_tokens
-            WHERE reset_key=%s AND used_at=0
+            SELECT user_fk, created_at 
+            FROM password_reset_tokens
+            WHERE reset_key = %s 
+            AND used_at = 0
         """, (reset_key,))
+
         row = cursor.fetchone()
 
         if not row:
             return jsonify({"error": "Invalid or used reset key"}), 400
 
+        expires_after = 10 * 60
+        now = int(time.time())
+
+        if now - row["created_at"] > expires_after:
+            return jsonify({"error": "Reset link is expired"}), 400
+
+        password_hash = generate_password_hash(password)
+
         cursor.execute("""
-            UPDATE users SET user_password_hash=%s
-            WHERE user_pk=%s
+            UPDATE users 
+            SET user_password_hash = %s,
+                user_reset_password_key = ''
+            WHERE user_pk = %s
         """, (password_hash, row["user_fk"]))
 
         cursor.execute("""
-            UPDATE password_reset_tokens SET used_at=%s
-            WHERE reset_key=%s
+            UPDATE password_reset_tokens 
+            SET used_at = %s
+            WHERE reset_key = %s
         """, (int(time.time()), reset_key))
 
         db.commit()
@@ -582,8 +590,10 @@ def reset_password():
         return jsonify({"error": str(ex)}), 500
 
     finally:
-        if "cursor" in locals(): cursor.close()
-        if "db" in locals(): db.close()
+        if "cursor" in locals():
+            cursor.close()
+        if "db" in locals():
+            db.close()
 
 
 ##############################

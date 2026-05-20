@@ -4,8 +4,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-const baseUrl =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
 
 type User = {
   user_pk: string;
@@ -26,6 +25,7 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
   const [error, setError] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     async function getUser() {
@@ -59,6 +59,73 @@ export default function ProfilePage() {
 
     getUser();
   }, [router]);
+
+  async function saveProfile() {
+    try {
+      if (!user) return;
+
+      setIsSaving(true);
+
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(`${baseUrl}/api/me`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          user_first_name: user.user_first_name,
+          user_email: user.user_email,
+          user_phone: user.user_phone || "",
+          user_license_plate: user.user_license_plate,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Kunne ikke gemme ændringer");
+      }
+
+      alert("Profil opdateret");
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Noget gik galt");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function deactivateAccount() {
+    const confirmed = confirm(
+      "Er du sikker på, at du vil deaktivere din konto?"
+    );
+
+    if (!confirmed) return;
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(`${baseUrl}/api/me`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Kunne ikke deaktivere konto");
+      }
+
+      localStorage.removeItem("token");
+      alert("Din konto er nu deaktiveret");
+      router.push("/login");
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Noget gik galt");
+    }
+  }
 
   function logout() {
     localStorage.removeItem("token");
@@ -145,10 +212,41 @@ export default function ProfilePage() {
 
           <h2 style={sectionTitleStyle}>Personlige oplysninger</h2>
 
-          <InfoRow label="Navn" value={user.user_first_name} />
-          <InfoRow label="Email" value={user.user_email} />
-          <InfoRow label="Telefon" value={user.user_phone || "Ikke angivet"} />
-          <InfoRow label="Nummerplade" value={user.user_license_plate} />
+          <label style={inputLabelStyle}>Navn</label>
+          <input
+            style={inputStyle}
+            value={user.user_first_name}
+            onChange={(e) =>
+              setUser({ ...user, user_first_name: e.target.value })
+            }
+          />
+
+          <label style={inputLabelStyle}>Email</label>
+          <input
+            style={inputStyle}
+            value={user.user_email}
+            onChange={(e) => setUser({ ...user, user_email: e.target.value })}
+          />
+
+          <label style={inputLabelStyle}>Telefon</label>
+          <input
+            style={inputStyle}
+            value={user.user_phone || ""}
+            onChange={(e) => setUser({ ...user, user_phone: e.target.value })}
+          />
+
+          <label style={inputLabelStyle}>Nummerplade</label>
+          <input
+            style={inputStyle}
+            value={user.user_license_plate}
+            onChange={(e) =>
+              setUser({ ...user, user_license_plate: e.target.value })
+            }
+          />
+
+          <button onClick={saveProfile} style={saveButtonStyle}>
+            {isSaving ? "Gemmer..." : "Gem ændringer"}
+          </button>
 
           <h2 style={sectionTitleStyle}>Betaling</h2>
 
@@ -168,18 +266,13 @@ export default function ProfilePage() {
           <button onClick={logout} style={logoutButtonStyle}>
             Log ud
           </button>
+
+          <button onClick={deactivateAccount} style={deleteButtonStyle}>
+            Slet min konto
+          </button>
         </section>
       </div>
     </main>
-  );
-}
-
-function InfoRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div style={infoRowStyle}>
-      <span style={infoLabelStyle}>{label}</span>
-      <strong style={infoValueStyle}>{value}</strong>
-    </div>
   );
 }
 
@@ -259,14 +352,7 @@ const sectionTitleStyle = {
   marginTop: "30px",
 } as const;
 
-const infoRowStyle = {
-  border: "1px solid #eee",
-  borderRadius: "10px",
-  padding: "14px",
-  marginBottom: "10px",
-} as const;
-
-const infoLabelStyle = {
+const inputLabelStyle = {
   display: "block",
   color: "#999",
   fontSize: "10px",
@@ -275,9 +361,28 @@ const infoLabelStyle = {
   marginBottom: "5px",
 } as const;
 
-const infoValueStyle = {
+const inputStyle = {
+  width: "100%",
+  border: "1px solid #eee",
+  borderRadius: "10px",
+  padding: "14px",
+  marginBottom: "10px",
   fontSize: "15px",
-  color: "#111",
+  fontWeight: 700,
+  boxSizing: "border-box",
+} as const;
+
+const saveButtonStyle = {
+  width: "100%",
+  background: "#67d27d",
+  color: "#000",
+  border: "none",
+  borderRadius: "8px",
+  padding: "15px",
+  fontWeight: 900,
+  fontSize: "16px",
+  marginTop: "10px",
+  marginBottom: "12px",
 } as const;
 
 const paymentCardStyle = {
@@ -318,4 +423,16 @@ const logoutButtonStyle = {
   fontWeight: 900,
   fontSize: "17px",
   marginTop: "24px",
+} as const;
+
+const deleteButtonStyle = {
+  width: "100%",
+  background: "#d11a2a",
+  color: "white",
+  border: "none",
+  borderRadius: "8px",
+  padding: "15px",
+  fontWeight: 900,
+  fontSize: "16px",
+  marginTop: "10px",
 } as const;

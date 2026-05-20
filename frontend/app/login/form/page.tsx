@@ -61,7 +61,7 @@ export default function LoginFormPage() {
                 <input
                   className="auth-input"
                   type="email"
-                  placeholder="user@gmail.com"
+                  placeholder="Indtast email"
                   value={userEmail}
                   onChange={(e) => setUserEmail(e.target.value)}
                 />
