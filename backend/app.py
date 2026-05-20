@@ -823,5 +823,49 @@ def dashboard():
             db.close()
 
 ##############################
+@app.get("/api/wash-history-detailed")
+@jwt_required()
+def get_wash_history_detailed():
+    try:
+        user_pk = get_jwt_identity()
+
+        db, cursor = x.db()
+
+        q = """
+            SELECT 
+                `user_fk`, 
+                `wash_type`,
+                `washed_at`,
+                ROW_NUMBER() OVER (ORDER BY `washed_at` ASC) AS `wash_number`
+            FROM `wash_history`
+            WHERE `user_fk` = %s
+            ORDER BY `washed_at` DESC
+        """
+
+        cursor.execute(q, (user_pk,))
+        history = cursor.fetchall()
+
+        formatted_history = []
+        for wash in history:
+            formatted_history.append({
+                "user_fk": wash["user_fk"],
+                "wash_type": wash["wash_type"],
+                "washed_at": int(wash["washed_at"]),
+                "wash_number": wash["wash_number"]
+            })
+
+        return jsonify({"wash_history": formatted_history}), 200
+
+    except Exception as ex:
+        ic(ex)
+        return jsonify({"error": str(ex)}), 500
+
+    finally:
+        if "cursor" in locals():
+            cursor.close()
+        if "db" in locals():
+            db.close()
+
+##############################
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5001)

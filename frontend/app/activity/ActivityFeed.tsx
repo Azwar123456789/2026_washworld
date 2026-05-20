@@ -1,6 +1,3 @@
-//NPM INSTALLATION
-//apexcharts.com/docs/installation/
-
 "use client";
 
 import { useRouter } from "next/navigation";
@@ -40,18 +37,18 @@ const baseOptions = {
   colors: ["#42BC69"],
   xaxis: {
     categories: [
-      "DEC",
-      "NOV",
-      "OCT",
-      "SEPT",
-      "AUG",
-      "JUL",
-      "JUN",
-      "MAY",
-      "APR",
-      "MAR",
-      "FEB",
       "JAN",
+      "FEB",
+      "MAR",
+      "APR",
+      "MAY",
+      "JUN",
+      "JUL",
+      "AUG",
+      "SEPT",
+      "OCT",
+      "NOV",
+      "DEC",
     ],
     labels: {
       style: {
@@ -85,7 +82,7 @@ export default function ActivityFeed() {
           router.push("/login");
           return;
         }
-        const response = await fetch("http://localhost:5001/api/dashboard", {
+        const response = await fetch("http://localhost:5001/api/wash-history-detailed", {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (response.status === 401) {
@@ -94,11 +91,35 @@ export default function ActivityFeed() {
         }
         if (response.ok) {
           const data = await response.json();
-          if (data.monthly_washes) {
-            setWashData(data.monthly_washes);
+          if (data.wash_history && Array.isArray(data.wash_history)) {
+            const monthCounts = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+            const now = new Date();
+            const currentMonth = now.getMonth();
+            const currentYear = now.getFullYear();
+
+            data.wash_history.forEach((wash: any) => {
+              const timestamp = parseInt(wash.washed_at, 10);
+              
+              if (isNaN(timestamp)) {
+                console.warn("Invalid timestamp:", wash.washed_at);
+                return;
+              }
+
+              const washDate = new Date(timestamp * 1000);
+              const washMonth = washDate.getMonth();
+              const washYear = washDate.getFullYear();
+
+              const monthsBack = (currentYear - washYear) * 12 + (currentMonth - washMonth);
+              
+              if (monthsBack >= 0 && monthsBack < 12) {
+                monthCounts[washMonth]++;
+              }
+            });
+            
+            setWashData(monthCounts);
           }
         } else {
-          console.error("Dashboard error:", response.status, await response.text());
+          console.error("Wash history error:", response.status, await response.text());
         }
       } catch (error) {
         console.error("Failed to fetch wash data:", error);
