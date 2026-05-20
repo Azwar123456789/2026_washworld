@@ -19,10 +19,23 @@ export default function DashboardPage() {
   const [displayedLocations, setDisplayedLocations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAll, setShowAll] = useState(false);
+  const [userName, setUserName] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const token = localStorage.getItem("token");
+        
+        const dashboardRes = await fetch("http://localhost:5001/api/dashboard", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const dashboardData = await dashboardRes.json();
+        if (dashboardData.user?.user_first_name) {
+          setUserName(dashboardData.user.user_first_name);
+        }
+
         const locationsRes = await fetch("http://localhost:5001/api/locations");
         const locationsData = await locationsRes.json();
         console.log("API Response:", locationsData);
@@ -66,7 +79,7 @@ export default function DashboardPage() {
             />
           </div>
 
-          <h2 className="dashboard-greeting">Hej, Azwar</h2>
+          <h2 className="dashboard-greeting">Hej, {userName}</h2>
           <p className="dashboard-subtitle">Klar til din næste vask?</p>
         </section>
 
