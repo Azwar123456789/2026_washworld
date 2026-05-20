@@ -81,12 +81,12 @@ export default function ActivityFeed() {
     const fetchWashData = async () => {
       try {
         const token = localStorage.getItem("access_token");
-        const response = await fetch("http://localhost:5001/api/wash-stats", {
+        const response = await fetch("http://localhost:5001/api/dashboard", {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await response.json();
-        if (data.wash_data) {
-          setWashData(data.wash_data);
+        if (data.monthly_washes) {
+          setWashData(data.monthly_washes);
         }
       } catch (error) {
         console.error("Failed to fetch wash data:", error);
