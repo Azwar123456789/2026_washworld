@@ -189,7 +189,7 @@ def send_email(receiver_email, subject, html):
         message = MIMEMultipart()
         message["From"] = "Washworld"
         message["To"] = receiver_email
-        message["Subject"] = "Wash World"
+        message["Subject"] = "subject"
 
         # Body of the email
         # body = f"""<h1>Hi</h1><h2>Hi again</h2>"""

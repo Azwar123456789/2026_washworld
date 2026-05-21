@@ -57,13 +57,12 @@ export default function PaymentInformationPage() {
         throw new Error(result.error || "Kunne ikke oprette bruger");
       }
 
-      localStorage.setItem("token", result.access_token);
-
       localStorage.removeItem("signup_information");
       localStorage.removeItem("selected_subscription");
       localStorage.removeItem("payment_information");
 
-      router.push("/dashboard");
+      router.push("/login/verify-message");
+
     } catch (err) {
       alert(err instanceof Error ? err.message : "Noget gik galt");
     }

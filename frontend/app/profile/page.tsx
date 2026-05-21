@@ -4,8 +4,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-const baseUrl =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
 
 type User = {
   user_pk: string;
@@ -26,6 +25,7 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
   const [error, setError] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     async function getUser() {
@@ -60,6 +60,73 @@ export default function ProfilePage() {
     getUser();
   }, [router]);
 
+  async function saveProfile() {
+    try {
+      if (!user) return;
+
+      setIsSaving(true);
+
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(`${baseUrl}/api/me`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          user_first_name: user.user_first_name,
+          user_email: user.user_email,
+          user_phone: user.user_phone || "",
+          user_license_plate: user.user_license_plate,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Kunne ikke gemme ændringer");
+      }
+
+      alert("Profil opdateret");
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Noget gik galt");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function deactivateAccount() {
+    const confirmed = confirm(
+      "Er du sikker på, at du vil deaktivere din konto?"
+    );
+
+    if (!confirmed) return;
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(`${baseUrl}/api/me`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Kunne ikke deaktivere konto");
+      }
+
+      localStorage.removeItem("token");
+      alert("Din konto er nu deaktiveret");
+      router.push("/login");
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Noget gik galt");
+    }
+  }
+
   function logout() {
     localStorage.removeItem("token");
     router.push("/login");
@@ -79,9 +146,7 @@ export default function ProfilePage() {
     return (
       <main className="dashboard-page">
         <div className="dashboard-shell">
-          <p style={{ color: "red", padding: "20px" }}>
-            {error || "Profil kunne ikke hentes"}
-          </p>
+          <p className="profile-error">{error || "Profil kunne ikke hentes"}</p>
         </div>
       </main>
     );
@@ -92,12 +157,15 @@ export default function ProfilePage() {
       <div className="dashboard-shell">
         <section className="dashboard-hero">
           <div className="dashboard-hero-top">
-            <button onClick={() => router.back()} style={backButtonStyle}>
+            <button
+              onClick={() => router.back()}
+              className="profile-back-button"
+            >
               ←
             </button>
 
             <Image
-              src="/logo_hvid.webp"
+              src="/logo_sort.webp"
               alt="Wash World"
               width={180}
               height={60}
@@ -105,217 +173,104 @@ export default function ProfilePage() {
           </div>
         </section>
 
-        <section style={{ background: "white", padding: "22px 18px" }}>
-          <div style={profileHeaderStyle}>
-            <div style={avatarStyle}>
+        <section className="profile-content">
+          <div className="profile-header">
+            <div className="profile-avatar">
               {user.user_first_name.slice(0, 2).toUpperCase()}
             </div>
 
             <div>
               <strong>{user.user_first_name}</strong>
-              <p style={{ margin: 0, color: "#777", fontSize: "13px" }}>
-                {user.user_email}
-              </p>
+              <p className="profile-email">{user.user_email}</p>
             </div>
           </div>
 
-          <h1 style={pageTitleStyle}>Min Profil</h1>
+          <h1 className="profile-page-title">Min Profil</h1>
 
-          <div style={subscriptionCardStyle}>
-            <h3 style={cardTitleStyle}>Dit medlemskab</h3>
+          <div className="profile-subscription-card">
+            <h3 className="profile-card-title">Dit medlemskab</h3>
 
-            <p style={membershipNameStyle}>
+            <p className="profile-membership-name">
               {user.user_membership || "Intet medlemskab"}
             </p>
 
-            <p style={activeStyle}>● AKTIV</p>
+            <p className="profile-active">● AKTIV</p>
 
-            <p style={mutedTextStyle}>
+            <p className="profile-muted-text">
               {user.subscription_price
                 ? `${user.subscription_price} kr./md.`
                 : "Pris ikke fundet"}
             </p>
 
             {user.location_name && (
-              <p style={mutedTextStyle}>
+              <p className="profile-muted-text">
                 Primær vaskehal: {user.location_name}
               </p>
             )}
           </div>
 
-          <h2 style={sectionTitleStyle}>Personlige oplysninger</h2>
+          <h2 className="profile-section-title">Personlige oplysninger</h2>
 
-          <InfoRow label="Navn" value={user.user_first_name} />
-          <InfoRow label="Email" value={user.user_email} />
-          <InfoRow label="Telefon" value={user.user_phone || "Ikke angivet"} />
-          <InfoRow label="Nummerplade" value={user.user_license_plate} />
+          <label className="profile-input-label">Navn</label>
+          <input
+            className="profile-input"
+            value={user.user_first_name}
+            onChange={(e) =>
+              setUser({ ...user, user_first_name: e.target.value })
+            }
+          />
 
-          <h2 style={sectionTitleStyle}>Betaling</h2>
+          <label className="profile-input-label">Email</label>
+          <input
+            className="profile-input"
+            value={user.user_email}
+            onChange={(e) => setUser({ ...user, user_email: e.target.value })}
+          />
 
-          <div style={paymentCardStyle}>
+          <label className="profile-input-label">Telefon</label>
+          <input
+            className="profile-input"
+            value={user.user_phone || ""}
+            onChange={(e) => setUser({ ...user, user_phone: e.target.value })}
+          />
+
+          <label className="profile-input-label">Nummerplade</label>
+          <input
+            className="profile-input"
+            value={user.user_license_plate}
+            onChange={(e) =>
+              setUser({ ...user, user_license_plate: e.target.value })
+            }
+          />
+
+          <button onClick={saveProfile} className="profile-save-button">
+            {isSaving ? "Gemmer..." : "Gem ændringer"}
+          </button>
+
+          <h2 className="profile-section-title">Betaling</h2>
+
+          <div className="profile-payment-card">
             <span>💳 **** {user.card_last4 || "----"}</span>
-            <span style={tagStyle}>STANDARD</span>
+            <span className="profile-tag">STANDARD</span>
           </div>
 
-          <div style={paymentRowStyle}>
+          <div className="profile-payment-row">
             Udløbsdato: {user.card_expiry || "--/--"}
           </div>
 
-          <div style={paymentRowStyle}>↔ Skift betalingsmetode ›</div>
+          <div className="profile-payment-row">↔ Skift betalingsmetode ›</div>
 
-          <div style={paymentRowStyle}>↺ Betalingshistorik ›</div>
+          <div className="profile-payment-row">↺ Betalingshistorik ›</div>
 
-          <button onClick={logout} style={logoutButtonStyle}>
+          <button onClick={logout} className="profile-logout-button">
             Log ud
+          </button>
+
+          <button onClick={deactivateAccount} className="profile-delete-button">
+            Slet min konto
           </button>
         </section>
       </div>
     </main>
   );
 }
-
-function InfoRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div style={infoRowStyle}>
-      <span style={infoLabelStyle}>{label}</span>
-      <strong style={infoValueStyle}>{value}</strong>
-    </div>
-  );
-}
-
-const backButtonStyle = {
-  width: "34px",
-  height: "34px",
-  borderRadius: "50%",
-  border: "3px solid #67d27d",
-  background: "transparent",
-  color: "#67d27d",
-  fontWeight: 900,
-  fontSize: "18px",
-} as const;
-
-const profileHeaderStyle = {
-  display: "flex",
-  alignItems: "center",
-  gap: "10px",
-  marginBottom: "28px",
-} as const;
-
-const avatarStyle = {
-  width: "42px",
-  height: "42px",
-  borderRadius: "50%",
-  background: "#67d27d",
-  color: "#000",
-  fontWeight: 900,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-} as const;
-
-const pageTitleStyle = {
-  textAlign: "center",
-  fontSize: "26px",
-  marginBottom: "28px",
-} as const;
-
-const subscriptionCardStyle = {
-  border: "1px solid #e5e5e5",
-  borderRadius: "12px",
-  padding: "22px",
-  textAlign: "center",
-  marginBottom: "30px",
-} as const;
-
-const cardTitleStyle = {
-  margin: "0 0 14px",
-  fontSize: "22px",
-  fontWeight: 800,
-} as const;
-
-const membershipNameStyle = {
-  fontSize: "28px",
-  fontWeight: 900,
-  margin: "0 0 10px",
-} as const;
-
-const activeStyle = {
-  color: "#67d27d",
-  fontSize: "12px",
-  fontWeight: 900,
-  marginBottom: "10px",
-} as const;
-
-const mutedTextStyle = {
-  color: "#777",
-  fontSize: "13px",
-  margin: "6px 0",
-} as const;
-
-const sectionTitleStyle = {
-  textAlign: "center",
-  fontSize: "16px",
-  marginBottom: "18px",
-  marginTop: "30px",
-} as const;
-
-const infoRowStyle = {
-  border: "1px solid #eee",
-  borderRadius: "10px",
-  padding: "14px",
-  marginBottom: "10px",
-} as const;
-
-const infoLabelStyle = {
-  display: "block",
-  color: "#999",
-  fontSize: "10px",
-  fontWeight: 900,
-  textTransform: "uppercase",
-  marginBottom: "5px",
-} as const;
-
-const infoValueStyle = {
-  fontSize: "15px",
-  color: "#111",
-} as const;
-
-const paymentCardStyle = {
-  border: "1px solid #ddd",
-  borderRadius: "8px",
-  padding: "14px",
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  marginBottom: "10px",
-} as const;
-
-const paymentRowStyle = {
-  border: "1px solid #eee",
-  borderRadius: "8px",
-  padding: "14px",
-  marginBottom: "10px",
-  color: "#555",
-  fontSize: "14px",
-} as const;
-
-const tagStyle = {
-  background: "#eee",
-  color: "#777",
-  fontSize: "10px",
-  padding: "4px 7px",
-  borderRadius: "4px",
-  fontWeight: 900,
-} as const;
-
-const logoutButtonStyle = {
-  width: "100%",
-  background: "#000",
-  color: "white",
-  border: "none",
-  borderRadius: "8px",
-  padding: "16px",
-  fontWeight: 900,
-  fontSize: "17px",
-  marginTop: "24px",
-} as const;

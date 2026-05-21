@@ -119,10 +119,9 @@ def sign_up():
                 has_all_locations_access,
                 user_verified_at,
                 user_verification_key,
-                user_reset_password_key,
                 user_created_at
             )
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, NULL, %s, %s, NOW())
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, NULL, %s, NOW())
         """, (
             user_pk,
             user_first_name,
@@ -133,7 +132,6 @@ def sign_up():
             primary_location_fk,
             has_all_locations_access,
             verification_key,
-            reset_password_key
         ))
 
         subscription_pk = uuid.uuid4().hex
@@ -185,11 +183,21 @@ def sign_up():
 
         db.commit()
 
-        access_token = create_access_token(identity=user_pk)
+        html = f"""
+            <h1>Bekræft din Wash World konto</h1>
+            <p>Hej {user_first_name}</p>
+            <p>Klik på linket herunder for at bekræfte din konto:</p>
+            <a href="http://localhost:3000/verify/{verification_key}">
+                    Bekræft konto
+            </a>"""
+
+        x.send_email(
+            user_email,
+            "Bekræft din Wash World konto",
+            html)
 
         return jsonify({
-            "message": "User created",
-            "access_token": access_token,
+            "message": "User created. Please verify your email.",
             "user": {
                 "user_pk": user_pk,
                 "user_first_name": user_first_name,
@@ -201,7 +209,7 @@ def sign_up():
                 "subscription_price": float(subscription_price),
                 "card_last4": card_last4
             }
-        }), 201
+        }), 200
 
     except Exception as ex:
         ic(ex)
@@ -219,7 +227,7 @@ def sign_up():
             return jsonify({"error": "Invalid license plate"}), 400
 
         if "Duplicate entry" in str(ex):
-            return jsonify({"error": "Email already exists"}), 409
+            return jsonify({"error": "Email already exists"}), 400
 
         return jsonify({"error": str(ex)}), 500
 
@@ -249,6 +257,7 @@ def login():
                 user_verified_at
             FROM users
             WHERE user_email = %s
+            AND user_is_active = 1
         """
 
         cursor.execute(q, (user_email,))
@@ -259,6 +268,9 @@ def login():
 
         if not check_password_hash(user["user_password_hash"], user_password):
             return jsonify({"error": "Invalid email or password"}), 401
+        
+        if user["user_verified_at"] is None:
+            return jsonify({"error": "Du skal bekræfte din email før du kan logge ind"}), 403
 
         access_token = create_access_token(identity=user["user_pk"])
 
@@ -389,15 +401,10 @@ def me():
             return jsonify({"message": "Profile updated"}), 200
 
         if request.method == "DELETE":
-            cursor.execute("DELETE FROM payment_cards WHERE user_fk = %s", (user_pk,))
-            cursor.execute("DELETE FROM password_reset_tokens WHERE user_fk = %s", (user_pk,))
-            cursor.execute("DELETE FROM subscriptions WHERE user_fk = %s", (user_pk,))
-            cursor.execute("DELETE FROM wash_history WHERE user_fk = %s", (user_pk,))
-            cursor.execute("DELETE FROM users WHERE user_pk = %s", (user_pk,))
-
+            cursor.execute("""UPDATE users SET user_is_active = 0 WHERE user_pk = %s""", (user_pk,))
             db.commit()
 
-            return jsonify({"message": "Account deleted"}), 200
+            return jsonify({"message": "Account deactivated"}), 200
 
     except Exception as ex:
         ic(ex)
@@ -430,16 +437,14 @@ def verify_account(key):
 
         db, cursor = x.db()
 
-        verified_at = int(time.time())
-
         q = """
             UPDATE users
-            SET user_verified_at = %s
+            SET user_verified_at = NOW()
             WHERE user_verification_key = %s
-            AND user_verified_at = 0
+            AND user_verified_at IS NULL
         """
 
-        cursor.execute(q, (verified_at, key))
+        cursor.execute(q, (key,))
         db.commit()
 
         if cursor.rowcount == 0:
@@ -460,7 +465,6 @@ def verify_account(key):
             cursor.close()
         if "db" in locals():
             db.close()
-
 
 ##############################
 ##############################
@@ -496,15 +500,6 @@ def forgot_password():
             reset_key,
             0,
             created_at
-        ))
-
-        cursor.execute("""
-            UPDATE users 
-            SET user_reset_password_key = %s 
-            WHERE user_pk = %s
-        """, (
-            reset_key,
-            user["user_pk"]
         ))
 
         db.commit()
@@ -550,27 +545,38 @@ def reset_password():
         if password != confirm_password:
             return jsonify({"error": "Passwords do not match"}), 400
 
-        password_hash = generate_password_hash(password)
-
         db, cursor = x.db()
 
         cursor.execute("""
-            SELECT user_fk FROM password_reset_tokens
-            WHERE reset_key=%s AND used_at=0
+            SELECT user_fk, created_at 
+            FROM password_reset_tokens
+            WHERE reset_key = %s 
+            AND used_at = 0
         """, (reset_key,))
+
         row = cursor.fetchone()
 
         if not row:
             return jsonify({"error": "Invalid or used reset key"}), 400
 
+        expires_after = 10 * 60
+        now = int(time.time())
+
+        if now - row["created_at"] > expires_after:
+            return jsonify({"error": "Reset link is expired"}), 400
+
+        password_hash = generate_password_hash(password)
+
         cursor.execute("""
-            UPDATE users SET user_password_hash=%s
-            WHERE user_pk=%s
+            UPDATE users 
+            SET user_password_hash = %s
+            WHERE user_pk = %s
         """, (password_hash, row["user_fk"]))
 
         cursor.execute("""
-            UPDATE password_reset_tokens SET used_at=%s
-            WHERE reset_key=%s
+            UPDATE password_reset_tokens 
+            SET used_at = %s
+            WHERE reset_key = %s
         """, (int(time.time()), reset_key))
 
         db.commit()
@@ -582,8 +588,10 @@ def reset_password():
         return jsonify({"error": str(ex)}), 500
 
     finally:
-        if "cursor" in locals(): cursor.close()
-        if "db" in locals(): db.close()
+        if "cursor" in locals():
+            cursor.close()
+        if "db" in locals():
+            db.close()
 
 
 ##############################
