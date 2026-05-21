@@ -619,7 +619,9 @@ def get_locations():
                 location_opening_hours,
                 location_lat,
                 location_lng,
-                location_description
+                location_description,
+                que_status,
+                in_que
             FROM wash_locations
         """
 
