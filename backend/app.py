@@ -119,10 +119,9 @@ def sign_up():
                 has_all_locations_access,
                 user_verified_at,
                 user_verification_key,
-                user_reset_password_key,
                 user_created_at
             )
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, NULL, %s, %s, NOW())
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, NULL, %s, NOW())
         """, (
             user_pk,
             user_first_name,
@@ -133,7 +132,6 @@ def sign_up():
             primary_location_fk,
             has_all_locations_access,
             verification_key,
-            reset_password_key
         ))
 
         subscription_pk = uuid.uuid4().hex
@@ -185,11 +183,21 @@ def sign_up():
 
         db.commit()
 
-        access_token = create_access_token(identity=user_pk)
+        html = f"""
+            <h1>Bekræft din Wash World konto</h1>
+            <p>Hej {user_first_name}</p>
+            <p>Klik på linket herunder for at bekræfte din konto:</p>
+            <a href="http://localhost:3000/verify/{verification_key}">
+                    Bekræft konto
+            </a>"""
+
+        x.send_email(
+            user_email,
+            "Bekræft din Wash World konto",
+            html)
 
         return jsonify({
-            "message": "User created",
-            "access_token": access_token,
+            "message": "User created. Please verify your email.",
             "user": {
                 "user_pk": user_pk,
                 "user_first_name": user_first_name,
@@ -201,7 +209,7 @@ def sign_up():
                 "subscription_price": float(subscription_price),
                 "card_last4": card_last4
             }
-        }), 201
+        }), 200
 
     except Exception as ex:
         ic(ex)
@@ -219,7 +227,7 @@ def sign_up():
             return jsonify({"error": "Invalid license plate"}), 400
 
         if "Duplicate entry" in str(ex):
-            return jsonify({"error": "Email already exists"}), 409
+            return jsonify({"error": "Email already exists"}), 400
 
         return jsonify({"error": str(ex)}), 500
 
@@ -260,6 +268,9 @@ def login():
 
         if not check_password_hash(user["user_password_hash"], user_password):
             return jsonify({"error": "Invalid email or password"}), 401
+        
+        if user["user_verified_at"] is None:
+            return jsonify({"error": "Du skal bekræfte din email før du kan logge ind"}), 403
 
         access_token = create_access_token(identity=user["user_pk"])
 
@@ -426,16 +437,14 @@ def verify_account(key):
 
         db, cursor = x.db()
 
-        verified_at = int(time.time())
-
         q = """
             UPDATE users
-            SET user_verified_at = %s
+            SET user_verified_at = NOW()
             WHERE user_verification_key = %s
-            AND user_verified_at = 0
+            AND user_verified_at IS NULL
         """
 
-        cursor.execute(q, (verified_at, key))
+        cursor.execute(q, (key,))
         db.commit()
 
         if cursor.rowcount == 0:
@@ -456,7 +465,6 @@ def verify_account(key):
             cursor.close()
         if "db" in locals():
             db.close()
-
 
 ##############################
 ##############################
