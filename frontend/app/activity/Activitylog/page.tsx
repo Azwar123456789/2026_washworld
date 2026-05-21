@@ -79,6 +79,12 @@ export default function ActivityLogPage() {
         <h1 className="dashboard-top-title">Aktiviteter</h1>
 
         <section className="auth-header">
+          <img
+            src="/logo_sort.webp"
+            alt="Wash world logo"
+            className="auth-logo"
+          />
+
           <button
             type="button"
             className="auth-back-button"
@@ -86,7 +92,6 @@ export default function ActivityLogPage() {
           >
             ←
           </button>
-          <img src="/logo_sort.webp" alt="Wash World" className="auth-logo" />
         </section>
 
         <section className="activity-section">

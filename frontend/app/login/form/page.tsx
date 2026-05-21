@@ -29,7 +29,7 @@ export default function LoginFormPage() {
   return (
     <main className="auth-page">
       <div className="auth-shell">
-        <p className="auth-small-title">Login</p>
+
 
         <section className="auth-card">
           <div className="auth-header">

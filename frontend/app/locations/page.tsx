@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useLocations, WashLocation } from "../hooks/useLocations";
 
@@ -51,9 +50,9 @@ function calculateDistance(
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
+    Math.cos((lat2 * Math.PI) / 180) *
+    Math.sin(dLon / 2) *
+    Math.sin(dLon / 2);
 
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
@@ -132,12 +131,21 @@ export default function LocationsPage() {
 
   return (
     <main
+
       style={{
         minHeight: "100vh",
         background: "#efefef",
         paddingBottom: "100px",
       }}
     >
+      <section className="auth-header">
+        <img
+          src="/logo_sort.webp"
+          alt="Wash world logo"
+          className="auth-logo"
+        />
+      </section>
+
       <div
         style={{
           maxWidth: "420px",
@@ -145,32 +153,6 @@ export default function LocationsPage() {
           padding: "10px",
         }}
       >
-        <h1
-          style={{
-            fontSize: "16px",
-            color: "#b5b5b5",
-            marginBottom: "8px",
-          }}
-        >
-          Find Vaskehal
-        </h1>
-
-        <div
-          style={{
-            background: "#000",
-            padding: "16px",
-            display: "flex",
-            justifyContent: "center",
-            marginBottom: "16px",
-          }}
-        >
-          <Image
-            src="/logo_sort.webp"
-            alt="Wash World"
-            width={220}
-            height={70}
-          />
-        </div>
 
         <h2
           style={{
@@ -351,22 +333,22 @@ export default function LocationsPage() {
                 </div>
 
                 <Link
-  href={locationUrl}
-  style={{
-    textDecoration: "none",
-    color: "#111",
-  }}
->
-  <h3
-    style={{
-      margin: "0 0 6px 0",
-      fontSize: "28px",
-      fontWeight: 700,
-    }}
-  >
-    {location.location_name}
-  </h3>
-</Link>
+                  href={locationUrl}
+                  style={{
+                    textDecoration: "none",
+                    color: "#111",
+                  }}
+                >
+                  <h3
+                    style={{
+                      margin: "0 0 6px 0",
+                      fontSize: "28px",
+                      fontWeight: 700,
+                    }}
+                  >
+                    {location.location_name}
+                  </h3>
+                </Link>
 
                 <a
                   href={mapsUrl}

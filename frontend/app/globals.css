@@ -2,8 +2,9 @@ body {
   margin: 0;
   font-family: Arial, sans-serif;
   background: white;
-  color: #111827;
+ 
 }
+
 
 /* NAVBAR */
 .navbar {
@@ -22,7 +23,7 @@ body {
 /* NORMAL PAGES */
 .page {
   padding: 40px;
-  max-width: 1000px;
+  max-width: 420px;
   margin: auto;
 }
 
@@ -87,7 +88,7 @@ body {
 
 /* LOGIN PAGE DESIGN */
 .login-page {
-  min-height: 100vh;
+ 
   background: #f1f1f1;
   display: flex;
   justify-content: center;
@@ -189,9 +190,9 @@ body {
 /* ===== DASHBOARD / LOGGED-IN HOME ===== */
 
 .dashboard-page {
-  min-height: 100vh;
+ min-height: 100vh;
   background: #efefef;
-  padding: 16px 12px 110px;
+  padding-bottom: 100px;
 }
 
 .dashboard-shell {
@@ -725,12 +726,13 @@ body {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding: 18px 14px 40px;
+  padding: 0; 
 }
 
 .auth-shell {
   width: 100%;
-  max-width: 460px;
+  max-width: 420px;
+  margin: 0 auto;
 }
 
 .auth-small-title {
@@ -880,10 +882,6 @@ body {
 
 /* MOBIL */
 @media (max-width: 600px) {
-  .auth-page {
-    padding: 12px 10px 30px;
-  }
-
   .auth-header {
     height: 145px;
   }
@@ -945,12 +943,13 @@ body {
   background: #efefef;
   display: flex;
   justify-content: center;
-  padding: 14px 10px 40px;
+  
 }
 
 .signup-shell {
   width: 100%;
-  max-width: 390px;
+  max-width: 420px;
+  margin: 0 auto;
 }
 
 .signup-small-title {
@@ -962,7 +961,6 @@ body {
 .signup-card {
   background: #f8f8f8;
   overflow: hidden;
-  border: 4px solid #0798ff;
 }
 
 .signup-header {
@@ -1183,7 +1181,8 @@ body {
 
 @media (max-width: 420px) {
   .signup-shell {
-    max-width: 360px;
+    max-width: 420px;
+    margin: 0 auto;
   }
 
   .signup-content {
@@ -1275,7 +1274,8 @@ body {
 }
 
 .payment-shell {
-  max-width: 520px;
+  max-width: 420px;
+  margin: 0 auto;
 }
 
 .payment-header {
@@ -1322,7 +1322,8 @@ body {
 
 @media (max-width: 600px) {
   .payment-shell {
-    max-width: 390px;
+    max-width: 420px;
+    margin: 0 auto;
   }
 
   .payment-header {
@@ -1677,3 +1678,4 @@ body {
   font-size: 16px;
   margin-top: 10px;
 }
+

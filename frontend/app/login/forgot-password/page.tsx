@@ -49,7 +49,15 @@ export default function ForgotPasswordPage() {
   return (
     <main className="forgot-password-page">
       <section className="auth-card">
-        <div className="auth-header">
+
+
+        <section className="auth-header">
+          <img
+            src="/logo_sort.webp"
+            alt="Wash world logo"
+            className="auth-logo"
+          />
+
           <button
             type="button"
             className="auth-back-button"
@@ -57,13 +65,7 @@ export default function ForgotPasswordPage() {
           >
             ←
           </button>
-
-          <img
-            src="/images/washworld-logo.png"
-            alt="Wash World"
-            className="auth-logo"
-          />
-        </div>
+        </section>
 
         <div className="auth-content">
           <h1 className="auth-title">Glemt adgangskode</h1>

@@ -20,20 +20,24 @@ export default function ChooseSubscriptionPage() {
   return (
     <main className="signup-page">
       <div className="signup-shell">
-        <p className="signup-small-title">Vælge vask</p>
 
         <section className="signup-card no-border">
-          <div className="signup-header">
+
+          <section className="auth-header">
+            <img
+              src="/logo_sort.webp"
+              alt="Wash world logo"
+              className="auth-logo"
+            />
+
             <button
               type="button"
-              className="signup-back-button"
+              className="auth-back-button"
               onClick={() => router.push("/signup")}
             >
               ←
             </button>
-
-            <img src="/logo_sort.webp" alt="Wash World" className="signup-logo" />
-          </div>
+          </section>
 
           <div className="signup-content">
             <h1 className="signup-title">Vask som passer til dig</h1>
