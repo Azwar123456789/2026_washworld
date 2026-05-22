@@ -155,22 +155,20 @@ export default function ProfilePage() {
   return (
     <main className="dashboard-page">
       <div className="dashboard-shell">
-        <section className="dashboard-hero">
-          <div className="dashboard-hero-top">
-            <button
-              onClick={() => router.back()}
-              className="profile-back-button"
-            >
-              ←
-            </button>
+        <section className="auth-header">
+          <img
+            src="/logo_sort.webp"
+            alt="Wash world logo"
+            className="auth-logo"
+          />
 
-            <Image
-              src="/logo_sort.webp"
-              alt="Wash World"
-              width={180}
-              height={60}
-            />
-          </div>
+          <button
+            type="button"
+            className="auth-back-button"
+            onClick={() => router.push("/locations")}
+          >
+            ←
+          </button>
         </section>
 
         <section className="profile-content">

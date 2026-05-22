@@ -8,10 +8,6 @@ export default function QRPage() {
 
       <div className="dashboard-shell">
 
-        {/* Small title */}
-        <h1 className="dashboard-top-title">
-          QR kode
-        </h1>
 
         {/* Header */}
         <section
