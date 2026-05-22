@@ -138,13 +138,6 @@ export default function LocationsPage() {
         paddingBottom: "100px",
       }}
     >
-      <section className="auth-header">
-        <img
-          src="/logo_sort.webp"
-          alt="Wash world logo"
-          className="auth-logo"
-        />
-      </section>
 
       <div
         style={{
@@ -153,6 +146,14 @@ export default function LocationsPage() {
           padding: "10px",
         }}
       >
+
+        <section className="auth-header">
+          <img
+            src="/logo_sort.webp"
+            alt="Wash world logo"
+            className="auth-logo"
+          />
+        </section>
 
         <h2
           style={{
