@@ -4,9 +4,26 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+interface FormattedWash {
+  title: string;
+  location: string;
+  price: string;
+  date: string;
+}
+
+interface ActivityLogResponse {
+  activity_log: Array<{
+    wash_type: string;
+    location_city: string;
+    subscription_price: number;
+    washed_at: number;
+  }>;
+  total_spent: number;
+}
+
 export default function ActivityLogPage() {
   const router = useRouter();
-  const [recentWashes, setRecentWashes] = useState([]);
+  const [recentWashes, setRecentWashes] = useState<FormattedWash[]>([]);
   const [totalWashPrice, setTotalWashPrice] = useState(0);
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
@@ -38,10 +55,10 @@ export default function ActivityLogPage() {
           throw new Error(`Activity log fetch failed: ${response.status}`);
         }
 
-        const data = await response.json();
+        const data = (await response.json()) as ActivityLogResponse;
 
         if (data.activity_log) {
-          const formattedWashes = data.activity_log.map((wash) => {
+          const formattedWashes = data.activity_log.map((wash: typeof data.activity_log[number]) => {
             const date = new Date(wash.washed_at * 1000);
             return {
               title: wash.wash_type,
@@ -98,8 +115,8 @@ export default function ActivityLogPage() {
           <h1 className="section-title">Seneste vaske</h1>
 
           <div className="activity-list">
-            {recentWashes.map((wash) => (
-              <article key={wash.date} className="activity-card">
+            {recentWashes.map((wash, index) => (
+              <article key={`${wash.date}-${index}`} className="activity-card">
                 <div className="activity-card-icon">🚗</div>
                 <div className="activity-card-content">
                   <div className="activity-card-top">
