@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
 
@@ -21,51 +22,45 @@ type User = {
 
 export default function ProfilePage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
 
-  const [isLoading, setIsLoading] = useState(true);
-  const [user, setUser] = useState<User | null>(null);
   const [error, setError] = useState("");
-  const [isSaving, setIsSaving] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+
+  const { data: fetchedUser, isLoading } = useQuery({
+    queryKey: ["profile"],
+    queryFn: async () => {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        router.push("/login");
+        throw new Error("No token");
+      }
+
+      const response = await fetch(`${baseUrl}/api/me`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Kunne ikke hente profil");
+      }
+
+      return result.user;
+    },
+  });
 
   useEffect(() => {
-    async function getUser() {
-      try {
-        const token = localStorage.getItem("token");
-
-        if (!token) {
-          router.push("/login");
-          return;
-        }
-
-        const response = await fetch(`${baseUrl}/api/me`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        const result = await response.json();
-
-        if (!response.ok) {
-          throw new Error(result.error || "Kunne ikke hente profil");
-        }
-
-        setUser(result.user);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Noget gik galt");
-      } finally {
-        setIsLoading(false);
-      }
+    if (fetchedUser) {
+      setUser(fetchedUser);
     }
+  }, [fetchedUser]);
 
-    getUser();
-  }, [router]);
-
-  async function saveProfile() {
-    try {
-      if (!user) return;
-
-      setIsSaving(true);
-
+  const saveProfileMutation = useMutation({
+    mutationFn: async (userData: User) => {
       const token = localStorage.getItem("token");
 
       const response = await fetch(`${baseUrl}/api/me`, {
@@ -75,10 +70,10 @@ export default function ProfilePage() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          user_first_name: user.user_first_name,
-          user_email: user.user_email,
-          user_phone: user.user_phone || "",
-          user_license_plate: user.user_license_plate,
+          user_first_name: userData.user_first_name,
+          user_email: userData.user_email,
+          user_phone: userData.user_phone || "",
+          user_license_plate: userData.user_license_plate,
         }),
       });
 
@@ -88,43 +83,57 @@ export default function ProfilePage() {
         throw new Error(result.error || "Kunne ikke gemme ændringer");
       }
 
-      alert("Profil opdateret");
-    } catch (err) {
-      alert(err instanceof Error ? err.message : "Noget gik galt");
-    } finally {
-      setIsSaving(false);
-    }
+      return result.user;
+    },
+    onMutate: async (newData) => {
+      setError("");
+      const previousUser = user;
+      setUser(newData);
+      return { previousUser };
+    },
+    onError: (err, newData, context) => {
+      if (context?.previousUser) {
+        setUser(context.previousUser);
+      }
+      setError(err instanceof Error ? err.message : "Noget gik galt");
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      setError("");
+    },
+  });
+
+  function saveProfile() {
+    if (!user) return;
+    saveProfileMutation.mutate(user);
   }
 
-  async function deactivateAccount() {
+  function deactivateAccount() {
     const confirmed = confirm(
       "Er du sikker på, at du vil deaktivere din konto?"
     );
 
     if (!confirmed) return;
 
-    try {
-      const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token");
 
-      const response = await fetch(`${baseUrl}/api/me`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || "Kunne ikke deaktivere konto");
-      }
-
-      localStorage.removeItem("token");
-      alert("Din konto er nu deaktiveret");
-      router.push("/login");
-    } catch (err) {
-      alert(err instanceof Error ? err.message : "Noget gik galt");
-    }
+    fetch(`${baseUrl}/api/me`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((result) => {
+        if (result.error) {
+          alert(result.error);
+        } else {
+          localStorage.removeItem("token");
+          alert("Din konto er nu deaktiveret");
+          router.push("/login");
+        }
+      })
+      .catch((err) => alert(err.message));
   }
 
   function logout() {
@@ -142,11 +151,13 @@ export default function ProfilePage() {
     );
   }
 
-  if (error || !user) {
+  if (!user) {
     return (
       <main className="dashboard-page">
         <div className="dashboard-shell">
-          <p className="profile-error">{error || "Profil kunne ikke hentes"}</p>
+          <p className="profile-error">
+            {error || "Profil kunne ikke hentes"}
+          </p>
         </div>
       </main>
     );
@@ -243,9 +254,15 @@ export default function ProfilePage() {
             }
           />
 
-          <button onClick={saveProfile} className="profile-save-button">
-            {isSaving ? "Gemmer..." : "Gem ændringer"}
+          <button
+            onClick={saveProfile}
+            className="profile-save-button"
+            disabled={saveProfileMutation.isPending}
+          >
+            {saveProfileMutation.isPending ? "Gemmer..." : "Gem ændringer"}
           </button>
+
+          {error && <p style={{ color: "red" }}>{error}</p>}
 
           <h2 className="profile-section-title">Betaling</h2>
 
