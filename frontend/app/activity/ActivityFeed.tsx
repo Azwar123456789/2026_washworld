@@ -6,13 +6,13 @@ import ApexCharts from "apexcharts";
 
 const baseOptions = {
   chart: {
-    type: "bar",
+    type: "bar" as const,
     height: 600,
     toolbar: {
       show: false,
     },
     events: {
-      dataPointSelection(event, chartContext, config) {
+      dataPointSelection(event: any, chartContext: any, config: any) {
         const month = config.w.config.xaxis.categories[config.dataPointIndex];
         const value = config.w.config.series[0].data[config.dataPointIndex];
 

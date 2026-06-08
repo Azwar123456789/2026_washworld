@@ -6,8 +6,8 @@ import LocationsSection from "./locations_section";
 
 const queueLevels = ["low", "medium", "high"];
 
-const getStatusLabel = (status) => {
-  const statusNum = parseInt(status);
+const getStatusLabel = (status: string | number) => {
+  const statusNum = typeof status === "number" ? status : parseInt(status);
   if (statusNum <= 3) return "Easy";
   if (statusNum <= 7) return "Normal";
   return "Busy";
@@ -72,7 +72,7 @@ export default function DashboardPage() {
           setAllLocations([]);
         } else {
           const sortedLocations = locationsData.locations || [];
-          sortedLocations.sort((a, b) => {
+          sortedLocations.sort((a: any, b: any) => {
             const distA = a.distance !== null ? a.distance : Infinity;
             const distB = b.distance !== null ? b.distance : Infinity;
             return distA - distB;

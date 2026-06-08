@@ -9,12 +9,20 @@ function createSlug(value: string) {
     .replaceAll(" ", "-");
 }
 
-const getStatusLabel = (status) => {
+const getStatusLabel = (status: string | number) => {
   const statusNum = parseInt(status);
   if (statusNum <= 3) return "Ingen ventetid";
   if (statusNum <= 7) return "Normal ventetid";
   if (isNaN(statusNum)) return "no data";
   return "Lang ventetid";
+};
+
+type Location = {
+  location_pk: number;
+  location_city: string;
+  location_address: string;
+  in_que: number;
+  que_status: string | number;
 };
 
 export default function LocationsSection({
@@ -23,13 +31,19 @@ export default function LocationsSection({
   showAll,
   onShowMore,
   onShowLess,
+}: {
+  locations: Location[];
+  loading: boolean;
+  showAll: boolean;
+  onShowMore: () => void;
+  onShowLess: () => void;
 }) {
   return (
     <section className="locations-section">
       <h3 className="section-title">Find din nærmeste vaskehal</h3>
 
       {!loading && locations.length > 0 ? (
-        locations.map((location) => (
+        locations.map((location: Location) => (
           <div key={location.location_pk} className="location-card">
             <img
               src={
